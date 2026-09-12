@@ -1,0 +1,40 @@
+# Testresultat – KI Varslinger 1.0.1
+
+Testet 12. september 2026 med Python 3.13.15 og Home Assistant Core 2025.12.5 i et isolert lokalt miljø.
+
+## Funksjonstester
+
+19 tester bestått. Testene bruker Home Assistants egne State-, Event-, Store- og tjenesteregisterklasser. Notify- og vacuum-handlingene er simulerte og kontakter ingen telefon eller robot.
+
+Dekker: skjemaer, opprettelse av konfigurasjonsoppføring, validering av mottakere, fjerning av valgfrie kilder, opprettelse av plattformentiteter, faktiske tilstandslyttere og avregistrering, familieordlyd/lyd, uavhengige brytere, lagring, sonefilter, alarmforløp, kritisk alarm kontra test, Homey-alarm, uavhengig sending ved mottakerfeil, samme støvsugervarsel med Pause → Start, umiddelbar Start før robotens tilstand har oppdatert seg, avvisning av gamle knapper, sikre støvsugertester og gyldige transportavganger.
+
+Fra pakkens rot, i et Python-miljø med Home Assistant installert:
+
+```sh
+python -m unittest discover -s tests -v
+```
+
+## Innlastingstest
+
+`python tests/smoke_setup.py` passerer også:
+
+- HAs integrasjonslaster finner den egendefinerte integrasjonen.
+- En familieoppføring når `ConfigEntryState.LOADED`.
+- Seks brytere, to knapper og én statusentitet opprettes i entitetsregisteret.
+- En posisjonsendring kaller den simulerte notify-handlingen med korrekt tekst.
+- HAs Options Flow åpner innstillingsskjemaet.
+- Integrasjonen avlastes uten feil.
+
+Denne testen markerer Companion som tilgjengelig, bruker en simulert notify-handling og slår av automatisk pakkeinstallasjon i testmiljøet. Den erstatter ikke en test av mobilappen eller en full HAOS-installasjon. HAs standardadvarsel om uoffisielle custom integrations vises som forventet.
+
+## Ikke verifisert på fysisk utstyr
+
+Telefonlevering, lydnivå, iOS/Android-visning og utskifting av varsler, fysisk Roborock, Homey-tilkobling, alarmutstyr og kalender-/transportsensorene dine. Ruter-kalendervinduet er implementert, men ikke kjørt mot en ekte kalender. Utfør de innebygde testene og én ordinær hendelse per oppsett etter installasjon. Integrasjonen tester aldri alarmen ved å utløse den.
+
+## HACS og publiseringsskript (1.0.1)
+
+Begge manifestene passerer JSON-skjemaene fra HACS-kildekoden hentet 12. september 2026. Lokale brand-ikoner følger med. Bash-syntaks er kontrollert.
+
+Publiseringsskriptet er kjørt mot et midlertidig Git-repo med simulert GitHub CLI. Testen kontrollerer commit/tag/push, release-kallet, bevaring av uvedkommende filer og stopp ved eksisterende tag eller lokale endringer. Ingen kode er publisert til GitHub av testen. Skriptet bruker Bash 3.2-kompatibel syntaks, men er kjørt på Linux i testmiljøet, ikke på en fysisk Mac.
+
+HACS- og hassfest-jobbene på GitHub kan først bekreftes etter opplasting. Full HACS-installasjon er ikke testet i brukerens Home Assistant.

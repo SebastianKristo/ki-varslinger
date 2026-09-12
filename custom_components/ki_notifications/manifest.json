@@ -1,0 +1,17 @@
+{
+  "domain": "ki_notifications",
+  "name": "KI Varslinger",
+  "codeowners": [
+    "@SebastianKristo"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "mobile_app"
+  ],
+  "documentation": "https://github.com/SebastianKristo/ki-varslinger",
+  "integration_type": "service",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/SebastianKristo/ki-varslinger/issues",
+  "requirements": [],
+  "version": "1.0.1"
+}

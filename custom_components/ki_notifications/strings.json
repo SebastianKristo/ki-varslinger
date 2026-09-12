@@ -1,0 +1,106 @@
+{
+  "title": "KI Varslinger",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Nytt varslingsoppsett",
+        "description": "Legg til ett oppsett per type. Du kan legge til flere alarmer eller egne regler ved å legge til integrasjonen igjen.",
+        "data": {
+          "kind": "Type varsling"
+        }
+      },
+      "settings": {
+        "title": "Varslingsoppsett",
+        "description": "Velg mottakere og kilder. Bruk default for standardlyd; importer egne lydfiler i iPhone-appen først. Kritiske alarmvarsler krever egen tillatelse på iPhone.",
+        "data": {
+          "name": "Navn på oppsett",
+          "ios_targets": "iPhone / iPad – mottakere",
+          "android_targets": "Android – mottakere",
+          "sound": "iPhone-lyd (filnavn, eller default)",
+          "sound_away": "iPhone-lyd ved avreise",
+          "channel": "Android-kanal – navn",
+          "rune": "Rune – hjemme/borte-bryter",
+          "cybele": "Cybele – hjemme/borte-bryter",
+          "sebastian": "Sebastian – hjemme/borte-bryter",
+          "entity": "Entitet som skal overvåkes",
+          "room": "Sensor for rommet støvsugeren er i (valgfritt)",
+          "selected_rooms": "Brytere for valgte rom (valgfritt)",
+          "critical": "Kritisk iPhone-varsel ved utløst alarm",
+          "from_state": "Fra tilstand (f.eks. off)",
+          "to_state": "Til tilstand (f.eks. on)",
+          "message": "Melding",
+          "icon": "Ikon",
+          "zone_person": "Person/telefon for sonefilter (valgfritt)",
+          "zones": "Tillatte soner",
+          "trackers": "Telefoner/personer",
+          "calendar": "Timeplankalender (valgfritt)",
+          "tram_sensors": "Trikkesensorer",
+          "bus_sensors": "Busssensorer (filtrert for ønsket linje/retning)",
+          "metro": "T-banesensor (valgfritt)",
+          "directions": "Trikkeretninger – søkeord skilt med komma",
+          "walk": "Gangtid til trikken",
+          "ride": "Reisetid trikk til Majorstuen",
+          "transfer": "Overgangstid",
+          "before_end": "Minutter før forelesningen slutter",
+          "triggered_sensor": "Separat bryter/sensor for utløst alarm (Homey, valgfritt)"
+        }
+      }
+    },
+    "error": {
+      "no_targets": "Velg minst én telefon.",
+      "missing_service": "En valgt notify-handling finnes ikke. Velg navnet uten notify. foran.",
+      "duplicate_target": "Samme telefon kan ikke være både iPhone og Android.",
+      "duplicate_source": "Velg ulike brytere for de tre personene.",
+      "missing_person": "Velg en person/telefon når du bruker sonefilter.",
+      "missing_ruter": "Velg minst én telefon/person, skolesone og trikkesensor."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Varslingsoppsett",
+        "description": "Velg mottakere og kilder. Bruk default for standardlyd; importer egne lydfiler i iPhone-appen først. Kritiske alarmvarsler krever egen tillatelse på iPhone.",
+        "data": {
+          "name": "Navn på oppsett",
+          "ios_targets": "iPhone / iPad – mottakere",
+          "android_targets": "Android – mottakere",
+          "sound": "iPhone-lyd (filnavn, eller default)",
+          "sound_away": "iPhone-lyd ved avreise",
+          "channel": "Android-kanal – navn",
+          "rune": "Rune – hjemme/borte-bryter",
+          "cybele": "Cybele – hjemme/borte-bryter",
+          "sebastian": "Sebastian – hjemme/borte-bryter",
+          "entity": "Entitet som skal overvåkes",
+          "room": "Sensor for rommet støvsugeren er i (valgfritt)",
+          "selected_rooms": "Brytere for valgte rom (valgfritt)",
+          "critical": "Kritisk iPhone-varsel ved utløst alarm",
+          "from_state": "Fra tilstand (f.eks. off)",
+          "to_state": "Til tilstand (f.eks. on)",
+          "message": "Melding",
+          "icon": "Ikon",
+          "zone_person": "Person/telefon for sonefilter (valgfritt)",
+          "zones": "Tillatte soner",
+          "trackers": "Telefoner/personer",
+          "calendar": "Timeplankalender (valgfritt)",
+          "tram_sensors": "Trikkesensorer",
+          "bus_sensors": "Busssensorer (filtrert for ønsket linje/retning)",
+          "metro": "T-banesensor (valgfritt)",
+          "directions": "Trikkeretninger – søkeord skilt med komma",
+          "walk": "Gangtid til trikken",
+          "ride": "Reisetid trikk til Majorstuen",
+          "transfer": "Overgangstid",
+          "before_end": "Minutter før forelesningen slutter",
+          "triggered_sensor": "Separat bryter/sensor for utløst alarm (Homey, valgfritt)"
+        }
+      }
+    },
+    "error": {
+      "no_targets": "Velg minst én telefon.",
+      "missing_service": "En valgt notify-handling finnes ikke. Velg navnet uten notify. foran.",
+      "duplicate_target": "Samme telefon kan ikke være både iPhone og Android.",
+      "duplicate_source": "Velg ulike brytere for de tre personene.",
+      "missing_person": "Velg en person/telefon når du bruker sonefilter.",
+      "missing_ruter": "Velg minst én telefon/person, skolesone og trikkesensor."
+    }
+  }
+}
