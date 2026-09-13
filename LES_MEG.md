@@ -1,4 +1,4 @@
-# KI Varslinger 1.2.0
+# Varslinger og sikkerhet 2.0.0
 
 En egendefinert Home Assistant-integrasjon for familie, støvsuger, alarm, egne tilstandsendringer og Ruter-varsler. Oppsett og endringer gjøres i brukergrensesnittet. Ingen YAML-pakke eller KI-testskript kreves.
 
@@ -7,7 +7,7 @@ En egendefinert Home Assistant-integrasjon for familie, støvsuger, alarm, egne 
 1. Pakk ut ZIP-filen på datamaskinen.
 2. Kopier mappen `custom_components/ki_notifications` til `/config/custom_components/ki_notifications` i Home Assistant. Filen `/config/custom_components/ki_notifications/manifest.json` skal ligge direkte der, uten en ekstra undermappe.
 3. Start Home Assistant på nytt.
-4. Gå til **Innstillinger → Enheter og tjenester → Legg til integrasjon**. Søk etter **KI Varslinger**. Oppdater nettlesersiden hvis den ikke vises.
+4. Gå til **Innstillinger → Enheter og tjenester → Legg til integrasjon**. Søk etter **Varslinger og sikkerhet**. Oppdater nettlesersiden hvis den ikke vises.
 5. Velg typen varsling og fullfør skjemaet. Legg til integrasjonen igjen for hver ekstra type eller regel.
 6. Åpne enheten integrasjonen oppretter. Her finner du av/på-brytere, testknapper og **Varslingsstatus**. Legg ønskede entiteter på dashbordet med **Legg til på dashbord**.
 7. Bruk **Konfigurer/Alternativer** på integrasjonsoppføringen for å endre mottakere, kilder, lyd og øvrige innstillinger.
@@ -28,6 +28,78 @@ Deaktiver den gamle familieautomasjonen, Roborock-varslene og Ruter-varslingen n
 Familieoppsettet leser de gamle seks `input_boolean.posisjonsvarsel_*`-bryterne ved første oppstart hvis de finnes og har gyldig tilstand. Deretter bruker det egne brytere med lagrede valg. Hvis gamle brytere ikke er tilgjengelige første gang, starter de nye på. Kontroller valgene på integrasjonens enhet. Gamle dashbordbrytere må erstattes med de nye; entitets-ID-ene er ikke de samme.
 
 Lyder velges i det nye oppsettet; de gamle `input_select`-lydvelgerne styrer ikke integrasjonen. Start gjerne med `default` for første test.
+
+## Sikkerhetsfunksjoner – nytt i 2.0.0
+
+Navnet er endret til **Varslinger og sikkerhet** i HA/HACS. Domenet `ki_notifications`, repoet `SebastianKristo/ki-varslinger` og gamle varslingsoppsett beholdes. De tre sikkerhetsfunksjonene legges til som egne oppsett og starter **avslått**. De har ingen testknapp som kan betjene en fysisk lås eller alarm.
+
+Sikkerhetsoppsettene krever ikke en telefonmottaker. De styrer enhetene og har en statusentitet. Ønsker du push-varsler om alarmtilstand eller fastkjørt lås, bruker du de egne varslingsoppsettene som allerede finnes i integrasjonen.
+
+### Autolås
+
+1. Legg til typen **Autolås**.
+2. Velg låsen, normalt `lock.dorlas_blatann`.
+3. Velg dørsensoren `sensor.inngangsdor`.
+4. Fyll inn sensorens faktiske tilstander for **åpen** og **lukket**. Standard er `open`/`closed`; for en binærsensor brukes ofte `on`/`off`. Dersom din sensor har tekstverdier som `Åpen` og `Lukket`, skriv disse nøyaktig. Kontroller rå tilstand i Utviklerverktøy → Tilstander.
+5. Velg standard ventetid. Integrasjonen oppretter tallfeltet **Ventetid før autolås**, som kan legges på dashbordet. Feltet er en integrasjonseid `number`-entitet, med område 5–3600 sekunder, og husker verdien ved omstart.
+6. Vil du bruke en ekte `input_number`-helper, opprett den under **Innstillinger → Enheter og tjenester → Hjelpere → Tall**, og velg den i **Bruk eksisterende input_number for ventetid**. Da brukes helperen og det opprettes ikke et ekstra number-felt. Helperen må ha en gyldig verdi mellom 5 og 3600 sekunder.
+7. Fyll eventuelt inn koden låsen krever og slå på bryteren **Autolås**.
+
+Nedtellingen starter ved en faktisk overgang fra konfigurert åpen til lukket. Åpning, ukjent eller utilgjengelig dørsensor avbryter. Når tiden er ute, sjekkes at døren fremdeles er lukket og at låsen er bekreftet ulåst før `lock.lock` kalles. Er låsen allerede låst, gjøres ingenting. Andre låstilstander gir statusfeil og ingen låsekommando.
+
+Endring av ventetiden under en nedtelling regnes fra den opprinnelige lukkingen. Gjør du ventetiden kortere enn tiden som allerede har gått, kan låsekommandoen derfor komme straks. Ved omstart, reload eller etter at funksjonen har vært avslått, starter det ikke en ny nedtelling fra et gammelt lukket øyeblikksbilde; døren må åpnes og lukkes på nytt. Opplåsing av en dør som allerede står lukket starter heller ikke en ny nedtelling.
+
+Autolåsen er avhengig av at dørsensoren rapporterer korrekt. Tiden og tilstandene må prøves på din fysiske dør; en simulert test kan ikke bekrefte at låsereilen og døren fungerer mekanisk sammen.
+
+### Heimdall i Homey ↔ Alarmo
+
+Velg **Heimdall ↔ Alarmo** med:
+
+- Alarmo: `alarm_control_panel.alarm`.
+- Heimdall: `select.alarm_homealarm_state`.
+- Heimdall-valg for aktivert/deaktivert: `armed` / `disarmed`.
+- Alarmo-modus ved aktivering fra Heimdall: normalt `armed_away`, som i din gamle automasjon.
+- Alarmkode: fylles inn i passordfeltet i HA.
+- Kameraenes privacy mode-brytere: `switch.mellomgang_g5_turret_ultra_privacy_mode` og `switch.stue_g6_turret_privacy_mode` foreslås når de finnes.
+
+Etter at bryteren er slått på, brukes nye tilstandsendringer:
+
+| Endring | Handling |
+| --- | --- |
+| Heimdall blir `armed` | Aktiverer valgt Alarmo-modus dersom Alarmo ikke allerede er aktivert. |
+| Heimdall blir `disarmed` | Deaktiverer Alarmo. |
+| Alarmo blir `armed_away`, `armed_home`, `armed_night`, `armed_vacation` eller annen `armed_*`-tilstand | Setter Heimdall til `armed`. |
+| Alarmo blir `disarmed` | Setter Heimdall til `disarmed`. |
+| Alarmo bekrefter aktivert | Slår av privacy mode på valgte kameraer. |
+| Alarmo bekrefter deaktivert | Slår på privacy mode på valgte kameraer. |
+
+Heimdall-selecten din viser to nivåer (`armed`/`disarmed`). Derfor kan ikke alle Alarmo-moduser representeres én til én i den. En endring fra Alarmo natt-/hjemmemodus speiles til `armed`, men ekkoet aktiverer ikke Alarmo på nytt som bortemodus. Utløst alarm, inngangs-/utgangsforsinkelse og andre mellomtilstander kopieres ikke til en oppdiktet Heimdall-verdi. Bruk alarmvarslingsoppsettet for varsler om utløst alarm.
+
+Kameraene endres etter bekreftet Alarmo-tilstand, ikke bare fordi det ble sendt en armeringskommando. Mislykket armering skal dermed ikke automatisk slå av kameraenes privacy mode.
+
+Forventede svar fra det andre systemet gjenkjennes for å unngå returløkker. Manglende bekreftelse etter standard 120 sekunder, utilgjengelig mål eller en motstridende bekreftelse vises i **Sikkerhetsstatus**. Integrasjonen forsøker ikke uendelig på nytt. Kontroller begge systemene ved feil. Ingen synkroniseringskommando sendes bare ved HA-oppstart, reload eller aktivering av bryteren. Hvis systemene er ulike da, sett ønsket tilstand manuelt på ett av dem for å utløse en ny endring.
+
+**Deaktiver den gamle toveis synkroniseringsautomasjonen før den nye funksjonen slås på.** To parallelle synkmotorer kan gi motstridende kommandoer.
+
+### Ansiktsgjenkjenning – dørlås
+
+Selve ansiktsgjenkjenningen skjer fortsatt i kameraet/eksisterende system. Integrasjonen mottar tre ulike webhook-kall og kobler hvert endepunkt til Sebastian, Rune eller Cybele.
+
+1. Legg til **Ansiktsgjenkjenning – dørlås**, og velg `lock.dorlas_blatann`.
+2. Skriv låsekoden i feltet **Låse-/alarmkode**.
+3. Tre tilfeldige webhook-ID-er foreslås. Du kan erstatte dem med de tre ID-ene fra dine gamle automasjoner. ID-ene skal være ulike og registreres bare lokalt i ditt HA-oppsett.
+4. Skal gamle ID-er gjenbrukes, deaktiver de gamle webhook-automasjonene og last automasjonene inn på nytt først, slik at ID-ene blir frigitt. Integrasjonen overskriver ikke andres webhook-registreringer.
+5. Sett hvert kamera-/gjenkjenningskall til `http://DIN-HA-ADRESSE:8123/api/webhook/ID_FOR_PERSONEN`, med din faktiske HA-adresse, port og protokoll. ID-en tilhører URL-stien; ikke legg den i et `?`-queryfelt.
+6. Bruk **POST** eller **PUT**. Hvis systemet ditt bare sender GET, slå på **Tillat opplåsing med GET**. **HEAD** er kun en kontroll av endepunktet og låser aldri opp, i motsetning til det gamle YAML-eksemplet der alle metodene var utløsere.
+7. Slå på funksjonsbryteren når endepunktene er konfigurert.
+
+Webhookene registreres med `local_only: true`. Bruk den lokale HA-adressen. Det er webhook-ID-en og lokalt opphav som gir adgang; integrasjonen validerer ikke selve ansiktsbildet. ID-ene må derfor behandles som adgangsnøkler. De publiseres ikke i repoet eller som sensorattributter. Passordfeltet skjuler dem i skjemaet; HA lagrer konfigurasjonsverdier i `.storage`, så ikke legg HA-konfigurasjon eller sikkerhetskopier i GitHub.
+
+En webhook sender bare opplåsingskommando hvis låsen er bekreftet `locked`. Allerede `unlocked` fører ikke til en ny opplåsing eller en ny personregistrering. Ved ustabil/ukjent låstilstand avvises forsøket. Standard er minst 10 sekunder mellom faktiske forsøk.
+
+Etter kommandoen venter integrasjonen inntil 15 sekunder på `unlocked`. Først da oppdateres sensoren **Sist låst opp av** til **Sebastian**, **Rune** eller **Cybele**, med tidspunkt i attributtet `bekreftet_tid`. Verdien huskes ved omstart. Dette betyr «opplåsing bekreftet etter denne personens webhook»; det er ikke en uavhengig bekreftelse av ansiktsidentiteten. Feil eller manglende bekreftelse registrerer ingen ny person og vises i Sikkerhetsstatus.
+
+Ingen fysisk opplåsing foretas under de medfølgende automatiske testene. Prøv oppsettet på ditt utstyr etter at de gamle automasjonene er deaktivert.
 
 ## Hovedbryter for oppsett med flere valg
 
@@ -155,7 +227,7 @@ På Pixel velger du lyd i Android-innstillingene for Home Assistants varselkanal
 
 ## Feilsøking og kontroll
 
-Åpne **Varslingsstatus** på integrasjonens enhet. Attributtene viser siste melding, tidspunktet da minst én notify-handling lyktes, og siste sendefeil. «Sendt» betyr at Home Assistant-handlingen lyktes, ikke at telefonen bekreftet levering. Feil på én mottaker stopper ikke forsøket til den andre. Feilen logges også under KI Varslinger i HA-loggen.
+Åpne **Varslingsstatus** på integrasjonens enhet. Attributtene viser siste melding, tidspunktet da minst én notify-handling lyktes, og siste sendefeil. «Sendt» betyr at Home Assistant-handlingen lyktes, ikke at telefonen bekreftet levering. Feil på én mottaker stopper ikke forsøket til den andre. Feilen logges også under Varslinger og sikkerhet i HA-loggen.
 
 Hvis test virker, men ordinære varsler mangler: kontroller den nye varselbryteren, faktisk tilstandsendring på kilden og eventuelt sonefilter. Har en entitet fått nytt ID, velg den på nytt i Alternativer. Endringer lastes inn uten full omstart.
 
@@ -165,4 +237,4 @@ Ved avinstallering: fjern integrasjonsoppføringene, fjern mappen `custom_compon
 
 Kildekode, UI-skjemaer og hendelseshåndtering er testet lokalt med Home Assistant 2025.12.5. Testene bruker HAs ekte tilstandsmaskin og tjenesteregister med simulerte notify-/vacuum-handlinger. De sender ikke til telefoner og kjører ikke en fysisk alarm. Se `TESTING.md` for resultat og kjørekommando.
 
-Installasjon i din HA-instans, nettleservisning, fysisk Roborock og iPhone/Pixel-lyd er ikke testet her. Dette er første versjon. Lysstyringen på soverommet, klimastyringen og nattmodus-kortet er separate funksjoner; denne integrasjonen samler varslingen.
+Installasjon i din HA-instans, nettleservisning, fysisk Roborock og iPhone/Pixel-lyd er ikke testet her. Dette er første versjon. Lysstyringen på soverommet, klimastyringen og nattmodus-kortet er separate funksjoner. Denne integrasjonen samler varsling og de beskrevne sikkerhetsfunksjonene.

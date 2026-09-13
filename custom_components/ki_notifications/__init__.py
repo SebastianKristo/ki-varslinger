@@ -10,19 +10,27 @@ from homeassistant.helpers.event import async_track_state_change_event, async_tr
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 from homeassistant.components.zone import in_zone
+from .security import Security
 from .extra_notifications import ExtraNotifications
-from .const import DOMAIN, PEOPLE, INVALID, flags
+from .const import DOMAIN, PEOPLE, INVALID, flags, SECURITY_KINDS
 from .logic import alarm_event, presence_event, vacuum_actions, minutes, choose_departure
 
 _LOGGER = logging.getLogger(__name__)
-PLATFORMS = [Platform.SWITCH, Platform.BUTTON, Platform.SENSOR]
+PLATFORMS = [Platform.SWITCH, Platform.BUTTON, Platform.SENSOR, Platform.NUMBER]
 
 async def async_setup_entry(hass, entry):
     runtime = Runtime(hass, entry)
     await runtime.load()
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = runtime
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    runtime.listen()
+    try:
+        runtime.security_register()
+        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+        runtime.listen()
+    except Exception:
+        runtime.close()
+        await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+        hass.data[DOMAIN].pop(entry.entry_id,None)
+        raise
     entry.async_on_unload(entry.add_update_listener(reload_entry))
     return True
 
@@ -39,13 +47,13 @@ async def async_unload_entry(hass, entry):
 async def async_remove_entry(hass, entry):
     await Store(hass, 1, f'{DOMAIN}.{entry.entry_id}').async_remove()
 
-class Runtime(ExtraNotifications):
+class Runtime(ExtraNotifications, Security):
     def __init__(self, hass, entry):
         self.hass, self.entry = hass, entry
         self.cfg = dict(entry.options or entry.data)
         self.kind = entry.data['kind']
         self.store = Store(hass, 1, f'{DOMAIN}.{entry.entry_id}')
-        self.enabled = {k:True for k in flags(self.kind)}
+        self.enabled = {k:self.kind not in SECURITY_KINDS for k in flags(self.kind)}
         self.master_enabled = True
         self.listeners, self.unsubs = set(), []
         self.lock = asyncio.Lock()
@@ -62,6 +70,7 @@ class Runtime(ExtraNotifications):
         self.startup_cancel = None
         self.jam_cancel = None
         self.jam_generation = 0
+        self.security_init()
 
     async def load(self):
         saved = await self.store.async_load() or {}
@@ -74,11 +83,14 @@ class Runtime(ExtraNotifications):
         self.enabled.update({k:bool(v) for k,v in saved.get('enabled',{}).items() if k in self.enabled})
         self.master_enabled = bool(saved.get('master_enabled', True))
         self.last_weather_date = saved.get('last_weather_date')
+        self.autolock_seconds = saved.get('autolock_seconds',self.autolock_seconds)
+        self.last_unlock_person = saved.get('last_unlock_person')
+        self.last_unlock_at = saved.get('last_unlock_at')
         if not saved:
             await self.save_settings()
 
     async def save_settings(self):
-        await self.store.async_save({'enabled': self.enabled, 'master_enabled': self.master_enabled, 'last_weather_date': self.last_weather_date})
+        await self.store.async_save({'enabled': self.enabled, 'master_enabled': self.master_enabled, 'last_weather_date': self.last_weather_date, 'autolock_seconds':self.autolock_seconds, 'last_unlock_person':self.last_unlock_person, 'last_unlock_at':self.last_unlock_at})
 
     @callback
     def update(self):
@@ -90,6 +102,8 @@ class Runtime(ExtraNotifications):
             self.master_enabled = value
         else:
             self.enabled[key] = value
+        if self.kind in SECURITY_KINDS:
+            self.security_toggled()
         await self.save_settings()
         if self.kind == 'lock_jammed':
             self.arm_jam_timer()
@@ -112,6 +126,12 @@ class Runtime(ExtraNotifications):
         c = self.cfg
         self.extra_listen()
         entities = [c[p] for p in PEOPLE] if self.kind == 'family' else ([c['entity']] if 'entity' in c else [])
+        if self.kind == 'autolock':
+            entities.append(c['door_entity'])
+            if c.get('delay_helper'):
+                entities.append(c['delay_helper'])
+        if self.kind == 'alarm_sync':
+            entities.append(c['homey_select'])
         if self.kind == 'alarm' and c.get('triggered_sensor'):
             entities.append(c['triggered_sensor'])
         if self.kind == 'vacuum':
@@ -129,6 +149,7 @@ class Runtime(ExtraNotifications):
     def close(self):
         self.closed = True
         self.extra_close()
+        self.security_close()
         self.token = secrets.token_hex(16)
         for unsub in self.unsubs:
             unsub()
@@ -158,6 +179,9 @@ class Runtime(ExtraNotifications):
             if self.closed:
                 return
             old, new = event.data.get('old_state'), event.data.get('new_state')
+            if self.kind in SECURITY_KINDS:
+                await self.security_changed(old, new, event.data.get('entity_id'))
+                return
             if self.kind == 'lock_jammed':
                 await self.jam_changed(old, new)
                 return
@@ -355,6 +379,8 @@ class Runtime(ExtraNotifications):
         await self.send('🚏 Neste avganger' + (' – TEST' if test else ''), '\n'.join(lines), 'mdi:bus-clock', test=test)
 
     async def test(self, key):
+        if self.kind in SECURITY_KINDS:
+            return
         async with self.lock:
             if self.kind == 'family':
                 await self.family_notice('rune',key,True)

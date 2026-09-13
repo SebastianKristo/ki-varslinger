@@ -1,5 +1,5 @@
 {
-  "title": "KI Varslinger",
+  "title": "Varslinger og sikkerhet",
   "config": {
     "step": {
       "user": {
@@ -50,7 +50,24 @@
           "home_state": "Tilstand som betyr hjemme (on eller home)",
           "ai_entity": "AI Task-entitet (valgfritt, ellers standard fra HA)",
           "startup_delay": "Ventetid etter oppstart",
-          "jam_seconds": "Sammenhengende tid fastkjørt før varsel"
+          "jam_seconds": "Sammenhengende tid fastkjørt før varsel",
+          "door_entity": "Sensor for åpen/lukket dør",
+          "door_open": "Sensorverdi når døren er åpen",
+          "door_closed": "Sensorverdi når døren er lukket",
+          "autolock_delay": "Standard ventetid før autolås (sekunder)",
+          "delay_helper": "Bruk eksisterende input_number for ventetid (valgfritt)",
+          "security_code": "Låse-/alarmkode (lagres bare i HA-oppsettet)",
+          "homey_select": "Heimdall/Homey-alarmens select-entitet",
+          "homey_armed": "Heimdall-alternativ for aktivert",
+          "homey_disarmed": "Heimdall-alternativ for deaktivert",
+          "alarm_mode": "Alarmo-modus når Heimdall aktiveres",
+          "privacy_switches": "Kameraenes privacy mode-brytere",
+          "sync_timeout": "Ventetid for bekreftet alarmsynk (sekunder)",
+          "allow_get": "Tillat opplåsing med GET i tillegg til POST/PUT",
+          "face_cooldown": "Minste tid mellom opplåsingsforsøk (sekunder)",
+          "webhook_sebastian": "Lokal webhook-ID – Sebastian",
+          "webhook_rune": "Lokal webhook-ID – Rune",
+          "webhook_cybele": "Lokal webhook-ID – Cybele"
         }
       }
     },
@@ -61,7 +78,11 @@
       "duplicate_source": "Velg ulike brytere for de tre personene.",
       "missing_person": "Velg en person/telefon når du bruker sonefilter.",
       "missing_ruter": "Velg minst én telefon/person, skolesone og trikkesensor.",
-      "no_weekdays": "Velg minst én ukedag."
+      "no_weekdays": "Velg minst én ukedag.",
+      "invalid_door_states": "Åpen og lukket må ha ulike gyldige sensorverdier.",
+      "invalid_homey_options": "Heimdall-alternativene må være ulike og finnes i select-entiteten.",
+      "invalid_webhooks": "Velg tre ulike webhook-ID-er på minst 16 tegn, uten /, ? eller #.",
+      "webhook_in_use": "En webhook-ID er allerede i bruk. Deaktiver gammel automasjon eller velg en ny ID."
     }
   },
   "options": {
@@ -107,7 +128,24 @@
           "home_state": "Tilstand som betyr hjemme (on eller home)",
           "ai_entity": "AI Task-entitet (valgfritt, ellers standard fra HA)",
           "startup_delay": "Ventetid etter oppstart",
-          "jam_seconds": "Sammenhengende tid fastkjørt før varsel"
+          "jam_seconds": "Sammenhengende tid fastkjørt før varsel",
+          "door_entity": "Sensor for åpen/lukket dør",
+          "door_open": "Sensorverdi når døren er åpen",
+          "door_closed": "Sensorverdi når døren er lukket",
+          "autolock_delay": "Standard ventetid før autolås (sekunder)",
+          "delay_helper": "Bruk eksisterende input_number for ventetid (valgfritt)",
+          "security_code": "Låse-/alarmkode (lagres bare i HA-oppsettet)",
+          "homey_select": "Heimdall/Homey-alarmens select-entitet",
+          "homey_armed": "Heimdall-alternativ for aktivert",
+          "homey_disarmed": "Heimdall-alternativ for deaktivert",
+          "alarm_mode": "Alarmo-modus når Heimdall aktiveres",
+          "privacy_switches": "Kameraenes privacy mode-brytere",
+          "sync_timeout": "Ventetid for bekreftet alarmsynk (sekunder)",
+          "allow_get": "Tillat opplåsing med GET i tillegg til POST/PUT",
+          "face_cooldown": "Minste tid mellom opplåsingsforsøk (sekunder)",
+          "webhook_sebastian": "Lokal webhook-ID – Sebastian",
+          "webhook_rune": "Lokal webhook-ID – Rune",
+          "webhook_cybele": "Lokal webhook-ID – Cybele"
         }
       }
     },
@@ -118,7 +156,11 @@
       "duplicate_source": "Velg ulike brytere for de tre personene.",
       "missing_person": "Velg en person/telefon når du bruker sonefilter.",
       "missing_ruter": "Velg minst én telefon/person, skolesone og trikkesensor.",
-      "no_weekdays": "Velg minst én ukedag."
+      "no_weekdays": "Velg minst én ukedag.",
+      "invalid_door_states": "Åpen og lukket må ha ulike gyldige sensorverdier.",
+      "invalid_homey_options": "Heimdall-alternativene må være ulike og finnes i select-entiteten.",
+      "invalid_webhooks": "Velg tre ulike webhook-ID-er på minst 16 tegn, uten /, ? eller #.",
+      "webhook_in_use": "En webhook-ID er allerede i bruk. Deaktiver gammel automasjon eller velg en ny ID."
     }
   }
 }

@@ -1,9 +1,10 @@
 """One configuration entry per notification rule, editable through Options."""
+import secrets
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers import selector
-from .const import DOMAIN, KINDS, PEOPLE
+from .const import DOMAIN, KINDS, PEOPLE, SECURITY_KINDS
 
 
 def schema(hass, kind, saved):
@@ -21,11 +22,12 @@ def schema(hass, kind, saved):
     services = sorted(k for k in hass.services.async_services().get('notify', {}) if k.startswith('mobile_app_'))
     phone = selector.SelectSelector(selector.SelectSelectorConfig(options=services, multiple=True, custom_value=True))
     add('name', text, KINDS[kind])
-    add('ios_targets', phone, [x for x in services if x == 'mobile_app_sebastian_iphone_17_pro'])
-    add('android_targets', phone, [x for x in services if x in (['mobile_app_sebastian_pixel_9_pro_fold', 'mobile_app_sebastian_oneplus_15'] if kind in {'weather_ai','ha_start','lock_jammed'} else ['mobile_app_sebastian_pixel_9_pro_fold'])])
-    add('sound', text, 'default')
-    add('sound_away', text, 'default')
-    add('channel', text, 'KI Varsler')
+    if kind not in SECURITY_KINDS:
+        add('ios_targets', phone, [x for x in services if x == 'mobile_app_sebastian_iphone_17_pro'])
+        add('android_targets', phone, [x for x in services if x in (['mobile_app_sebastian_pixel_9_pro_fold', 'mobile_app_sebastian_oneplus_15'] if kind in {'weather_ai','ha_start','lock_jammed'} else ['mobile_app_sebastian_pixel_9_pro_fold'])])
+        add('sound', text, 'default')
+        add('sound_away', text, 'default')
+        add('channel', text, 'KI Varsler')
     if kind == 'family':
         for p in PEOPLE:
             known = f'switch.{p}_posisjon_hjemme_borte'
@@ -48,6 +50,35 @@ def schema(hass, kind, saved):
         add('icon', selector.IconSelector(), 'mdi:bell-ring-outline')
         add('zone_person', entity(['person', 'device_tracker']), required=False)
         add('zones', multi(['zone']), [])
+    elif kind == 'autolock':
+        known = 'lock.dorlas_blatann'
+        add('entity', entity(['lock']), known if hass.states.get(known) else None)
+        known = 'sensor.inngangsdor'
+        add('door_entity', entity(['sensor','binary_sensor']), known if hass.states.get(known) else None)
+        add('door_open', text, 'open')
+        add('door_closed', text, 'closed')
+        add('autolock_delay', selector.NumberSelector(selector.NumberSelectorConfig(min=5,max=3600,mode='box',unit_of_measurement='s')), 30)
+        add('delay_helper', entity(['input_number']), required=False)
+        add('security_code', selector.TextSelector(selector.TextSelectorConfig(type='password')), required=False)
+    elif kind == 'alarm_sync':
+        known = 'alarm_control_panel.alarm'
+        add('entity', entity(['alarm_control_panel']), known if hass.states.get(known) else None)
+        known = 'select.alarm_homealarm_state'
+        add('homey_select', entity(['select']), known if hass.states.get(known) else None)
+        add('homey_armed', text, 'armed')
+        add('homey_disarmed', text, 'disarmed')
+        add('alarm_mode', selector.SelectSelector(selector.SelectSelectorConfig(options=['armed_away','armed_home','armed_night','armed_vacation'])), 'armed_away')
+        add('security_code', selector.TextSelector(selector.TextSelectorConfig(type='password')), required=False)
+        add('privacy_switches', multi(['switch']), [x for x in ['switch.mellomgang_g5_turret_ultra_privacy_mode','switch.stue_g6_turret_privacy_mode'] if hass.states.get(x)])
+        add('sync_timeout', selector.NumberSelector(selector.NumberSelectorConfig(min=10,max=600,mode='box',unit_of_measurement='s')), 120)
+    elif kind == 'face_unlock':
+        known = 'lock.dorlas_blatann'
+        add('entity', entity(['lock']), known if hass.states.get(known) else None)
+        add('security_code', selector.TextSelector(selector.TextSelectorConfig(type='password')), required=False)
+        for person in PEOPLE:
+            add('webhook_'+person, selector.TextSelector(selector.TextSelectorConfig(type='password')), secrets.token_urlsafe(32))
+        add('allow_get', selector.BooleanSelector(), False)
+        add('face_cooldown', selector.NumberSelector(selector.NumberSelectorConfig(min=1,max=120,mode='box',unit_of_measurement='s')), 10)
     elif kind == 'weather_ai':
         known = 'weather.forecast_home'
         add('weather_entity', entity(['weather']), known if hass.states.get(known) else None)
@@ -76,9 +107,9 @@ def schema(hass, kind, saved):
     return vol.Schema(fields)
 
 
-def errors(hass, kind, data):
+def errors(hass, kind, data, entry_id=None):
     targets = data.get('ios_targets', []) + data.get('android_targets', [])
-    if not targets:
+    if not targets and kind not in SECURITY_KINDS:
         return {'base': 'no_targets'}
     if any(not hass.services.has_service('notify', s) for s in targets):
         return {'base': 'missing_service'}
@@ -92,6 +123,28 @@ def errors(hass, kind, data):
         return {'base': 'missing_ruter'}
     if kind == 'weather_ai' and not data.get('weekdays'):
         return {'base': 'no_weekdays'}
+    if kind == 'autolock' and (data['door_open'] == data['door_closed'] or data['door_closed'] in ['unknown','unavailable','']):
+        return {'base': 'invalid_door_states'}
+    if kind == 'alarm_sync':
+        source = hass.states.get(data['homey_select'])
+        values = [data['homey_armed'],data['homey_disarmed']]
+        if values[0] == values[1] or (source and any(v not in source.attributes.get('options',[]) for v in values)):
+            return {'base': 'invalid_homey_options'}
+    if kind == 'face_unlock':
+        ids = [data['webhook_'+p] for p in PEOPLE]
+        if len(set(ids)) != 3 or any(len(x)<16 or any(ch in x for ch in '/?#') for x in ids):
+            return {'base': 'invalid_webhooks'}
+        own = hass.data.get(DOMAIN,{}).get(entry_id)
+        owned = {own.cfg.get('webhook_'+p) for p in PEOPLE} if own else set()
+        if any(x in hass.data.get('webhook',{}) and x not in owned for x in ids):
+            return {'base': 'webhook_in_use'}
+        manager = getattr(hass,'config_entries',None)
+        if manager:
+            for entry in manager.async_entries(DOMAIN):
+                if entry.entry_id != entry_id and entry.data.get('kind') == 'face_unlock':
+                    cfg = entry.options or entry.data
+                    if any(cfg.get('webhook_'+p) in ids for p in PEOPLE):
+                        return {'base':'webhook_in_use'}
     return {}
 
 
@@ -119,7 +172,7 @@ class Flow(config_entries.ConfigFlow, domain=DOMAIN):
 class Options(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         kind = self.config_entry.data['kind']
-        err = errors(self.hass, kind, user_input) if user_input is not None else {}
+        err = errors(self.hass, kind, user_input, self.config_entry.entry_id) if user_input is not None else {}
         if user_input is not None and not err:
             return self.async_create_entry(title='', data=user_input)
         saved = dict(self.config_entry.options or self.config_entry.data)

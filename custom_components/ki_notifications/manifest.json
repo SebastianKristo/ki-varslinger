@@ -1,17 +1,18 @@
 {
   "domain": "ki_notifications",
-  "name": "KI Varslinger",
+  "name": "Varslinger og sikkerhet",
   "codeowners": [
     "@SebastianKristo"
   ],
   "config_flow": true,
   "dependencies": [
-    "mobile_app"
+    "mobile_app",
+    "webhook"
   ],
   "documentation": "https://github.com/SebastianKristo/ki-varslinger",
   "integration_type": "service",
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/SebastianKristo/ki-varslinger/issues",
   "requirements": [],
-  "version": "1.2.0"
+  "version": "2.0.0"
 }

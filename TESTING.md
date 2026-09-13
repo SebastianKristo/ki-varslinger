@@ -1,10 +1,10 @@
-# Testresultat – KI Varslinger 1.2.0
+# Testresultat – Varslinger og sikkerhet 2.0.0
 
 Testet 13. september 2026 med Python 3.13.15 og Home Assistant Core 2025.12.5 i et isolert lokalt miljø.
 
 ## Funksjonstester
 
-32 tester bestått. Testene bruker Home Assistants egne State-, Event-, Store- og tjenesteregisterklasser. Notify- og vacuum-handlingene er simulerte og kontakter ingen telefon eller robot.
+50 tester bestått. Testene bruker Home Assistants egne State-, Event-, Store- og tjenesteregisterklasser. Notify- og vacuum-handlingene er simulerte og kontakter ingen telefon eller robot.
 
 Dekker: skjemaer, opprettelse av konfigurasjonsoppføring, validering av mottakere, fjerning av valgfrie kilder, opprettelse av plattformentiteter, faktiske tilstandslyttere og avregistrering, familieordlyd/lyd, uavhengige brytere, lagring, sonefilter, alarmforløp, kritisk alarm kontra test, Homey-alarm, uavhengig sending ved mottakerfeil, samme støvsugervarsel med Pause → Start, umiddelbar Start før robotens tilstand har oppdatert seg, avvisning av gamle knapper, sikre støvsugertester og gyldige transportavganger.
 
@@ -48,3 +48,11 @@ AI Task og weather.get_forecasts er simulert med HAs tjenesteregister og respons
 ## Hovedbryter i 1.2.0
 
 Fire nye tester kontrollerer at hovedbryteren blokkerer automatiske familie- og alarmvarsler, bevarer individuelle valg, tillater eksplisitte testvarsler, lagres/gjenopprettes og bare opprettes for oppsett med flere brytere. Eldre lagringsformat uten hovedbryter migreres med hovedbryteren på. Innlastingstesten bekrefter nå ti familieentiteter.
+
+## Sikkerhetsfunksjoner i 2.0.0
+
+18 nye tester med simulerte enheter dekker: sikkerhetsfunksjoner av som standard og uten fysiske testhandlinger; autolåstimer, kontroll av lukket dør og ulåst lås, avbrudd ved åpning/ukjent sensor/avslått funksjon; tallfelt og ekstern input_number med lagring; toveis armering/deaktivering, korrekt privacy mode etter bekreftelse, beskyttelse mot ekko som ellers ville byttet hjemmemodus til bortemodus; feil ved armering, bekreftelsestidsavbrudd og motstridende alarmtilstander; tre lokale webhooks med metodevalg og opprydding; avvisning av ekstern kilde gjennom HAs webhook-handler; personregistrering først etter bekreftet opplåsing, lagring og korrekt navn for hvert av de tre endepunktene; ingen ny person ved allerede ulåst dør, feil eller tidsavbrudd.
+
+Innlastingstesten oppretter også autolås og ansiktsgjenkjenning i HAs virkelige konfigurasjons- og entitetsregister: begge får tre entiteter og starter avslått. Webhookene avregistreres ved avlasting. Companion- og webhook-transport regnes som oppsatt i denne testen, og nettverkskall til fysisk utstyr er ikke utført.
+
+HTTP-testene bruker simulerte lokale/eksterne forespørsler, ikke det virkelige kameraet. Alarmo/Homey, Bluetooth-låsen, dørkontaktens rå verdier og mekanisk låsing må testes hos brukeren. Ingen ekte PIN-kode eller brukerens webhook-ID-er inngår i testene.

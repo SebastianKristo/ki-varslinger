@@ -14,6 +14,7 @@ async def main():
   await h.config_entries.async_initialize()
   for reg in [entity_registry,device_registry,area_registry,floor_registry,label_registry]: await reg.async_load(h)
   h.config.components.add('mobile_app')
+  h.config.components.add('webhook')
   sent=[]
   async def notify(call):sent.append(dict(call.data))
   h.services.async_register('notify','mobile_app_test',notify)
@@ -31,6 +32,19 @@ async def main():
   flow=await h.config_entries.options.async_init(entry.entry_id)
   assert flow['type']=='form'
   print('OPTIONS FORM OK')
+  for kind, settings, expected_count in [
+   ('autolock',{'entity':'lock.front','door_entity':'sensor.door','door_open':'open','door_closed':'closed','autolock_delay':30},3),
+   ('face_unlock',{'entity':'lock.front',**{'webhook_'+p:'smoke_only_'+p+'_xxxxxxxxxxxxxxxxxxxx' for p in ['rune','cybele','sebastian']}},3),
+  ]:
+   extra=config_entries.ConfigEntry(version=1,minor_version=1,domain='ki_notifications',title=kind,data={'kind':kind,'name':kind,**settings},options={},source='user',unique_id=None,discovery_keys={},subentries_data=[])
+   await h.config_entries.async_add(extra)
+   await h.async_block_till_done()
+   own_extra=entity_registry.async_entries_for_config_entry(entity_registry.async_get(h),extra.entry_id)
+   assert len(own_extra)==expected_count, (kind,extra.state,len(own_extra))
+   assert not h.data['ki_notifications'][extra.entry_id].enabled['enabled']
+   assert await h.config_entries.async_unload(extra.entry_id)
+   print(kind, 'SETUP AND UNLOAD OK')
+  assert not h.data.get('webhook',{})
   assert await h.config_entries.async_unload(entry.entry_id)
   print('UNLOAD OK')
   await h.async_stop()
