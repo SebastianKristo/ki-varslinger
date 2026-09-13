@@ -1,4 +1,4 @@
-# KI Varslinger 1.1.0
+# KI Varslinger 1.2.0
 
 En egendefinert Home Assistant-integrasjon for familie, støvsuger, alarm, egne tilstandsendringer og Ruter-varsler. Oppsett og endringer gjøres i brukergrensesnittet. Ingen YAML-pakke eller KI-testskript kreves.
 
@@ -28,6 +28,14 @@ Deaktiver den gamle familieautomasjonen, Roborock-varslene og Ruter-varslingen n
 Familieoppsettet leser de gamle seks `input_boolean.posisjonsvarsel_*`-bryterne ved første oppstart hvis de finnes og har gyldig tilstand. Deretter bruker det egne brytere med lagrede valg. Hvis gamle brytere ikke er tilgjengelige første gang, starter de nye på. Kontroller valgene på integrasjonens enhet. Gamle dashbordbrytere må erstattes med de nye; entitets-ID-ene er ikke de samme.
 
 Lyder velges i det nye oppsettet; de gamle `input_select`-lydvelgerne styrer ikke integrasjonen. Start gjerne med `default` for første test.
+
+## Hovedbryter for oppsett med flere valg
+
+Familie- og alarmoppsettet får bryteren **Alle varsler**. Den styrer all automatisk varsling i det aktuelle oppsettet, uten å endre de individuelle bryterne. Har du slått av «Rune – kom hjem», forblir dette valget av etter at hovedbryteren slås av og på. Du kan også endre enkeltvalgene mens hovedbryteren er av.
+
+Hovedbryteren og enkeltvalgene huskes etter omstart. Ved oppgradering starter den nye hovedbryteren på, slik at eksisterende varsling fortsetter. Andre oppsett med bare én varselbryter får ikke en ekstra hovedbryter. Bryteren påvirker ikke andre integrasjonsoppføringer.
+
+Bevisst trykk på en **testknapp** sender fortsatt testvarsel når hovedbryteren er av, som ved de øvrige varselbryterne. For alarm gjelder hovedbryteren også automatiske varsler om utløst alarm, inkludert kritiske varsler.
 
 ## Familie – Rune, Cybele og Sebastian
 

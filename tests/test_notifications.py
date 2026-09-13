@@ -81,10 +81,52 @@ class Integration(unittest.IsolatedAsyncioTestCase):
         entities=[]
         for platform in [switch,button,sensor]:
             await platform.async_setup_entry(self.hass,r.entry,entities.extend)
-        self.assertEqual(len(entities),9)
-        self.assertEqual(len({e.unique_id for e in entities}),9)
+        self.assertEqual(len(entities),10)
+        self.assertEqual(len({e.unique_id for e in entities}),10)
         self.assertTrue(entities[0].is_on)
         self.assertEqual(entities[-1].native_value,'Klar')
+    async def test_master_preserves_individual_choices(self):
+        r=self.runtime('family')
+        await r.toggle('rune_home',False)
+        await r.toggle('master',False)
+        await self.change(r,'switch.rune','on','off')
+        await self.change(r,'switch.cybele','off','on')
+        self.assertEqual(len(self.sent),0)
+        self.assertFalse(r.enabled['rune_home'])
+        self.assertTrue(r.enabled['rune_away'])
+        await r.toggle('master',True)
+        await self.change(r,'switch.rune','off','on')
+        self.assertEqual(len(self.sent),0)
+        await self.change(r,'switch.rune','on','off')
+        self.assertEqual(len(self.sent),2)
+    async def test_master_blocks_alarm_but_allows_explicit_test(self):
+        r=self.runtime('alarm',entity='alarm_control_panel.home',critical=True)
+        await r.toggle('master',False)
+        await self.change(r,'alarm_control_panel.home','disarmed','armed_away')
+        await self.change(r,'alarm_control_panel.home','armed_away','triggered')
+        self.assertEqual(len(self.sent),0)
+        await r.test('triggered')
+        self.assertEqual(len(self.sent),2)
+        self.assertNotEqual(self.sent[0][1]['data']['push']['interruption-level'],'critical')
+    async def test_master_restored_and_legacy_defaults_on(self):
+        r=self.runtime('family')
+        await r.store.async_save({'enabled':{'rune_home':False}})
+        await r.load()
+        self.assertTrue(r.master_enabled)
+        self.assertFalse(r.enabled['rune_home'])
+        await r.toggle('master',False)
+        other=self.runtime('family');await other.load()
+        self.assertFalse(other.master_enabled)
+        self.assertFalse(other.enabled['rune_home'])
+    async def test_master_only_for_multiple_toggles(self):
+        from custom_components.ki_notifications import switch
+        from custom_components.ki_notifications.const import DOMAIN
+        for kind in KINDS:
+            r=self.runtime(kind);self.hass.data[DOMAIN]={r.entry.entry_id:r}
+            entities=[]
+            await switch.async_setup_entry(self.hass,r.entry,entities.extend)
+            masters=[e for e in entities if e.key=='master']
+            self.assertEqual(len(masters),1 if kind in {'family','alarm'} else 0)
     async def test_reject_invalid_recipients(self):
         self.assertEqual(errors(self.hass,'alarm',{}),{'base':'no_targets'})
         self.assertEqual(errors(self.hass,'alarm',{'ios_targets':['missing']}),{'base':'missing_service'})

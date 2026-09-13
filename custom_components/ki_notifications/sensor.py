@@ -16,4 +16,4 @@ class KIStatus(KIEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         r=self.runtime
-        return {'siste_melding':r.last_message,'siste_sendt':r.last_sent,'siste_feil':r.last_error,'datakildefeil':r.last_source_error,'type':r.kind}
+        return {'siste_melding':r.last_message,'siste_sendt':r.last_sent,'siste_feil':r.last_error,'datakildefeil':r.last_source_error,'type':r.kind, 'hovedbryter':r.master_enabled}

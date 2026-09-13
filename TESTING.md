@@ -1,10 +1,10 @@
-# Testresultat – KI Varslinger 1.1.0
+# Testresultat – KI Varslinger 1.2.0
 
 Testet 13. september 2026 med Python 3.13.15 og Home Assistant Core 2025.12.5 i et isolert lokalt miljø.
 
 ## Funksjonstester
 
-28 tester bestått. Testene bruker Home Assistants egne State-, Event-, Store- og tjenesteregisterklasser. Notify- og vacuum-handlingene er simulerte og kontakter ingen telefon eller robot.
+32 tester bestått. Testene bruker Home Assistants egne State-, Event-, Store- og tjenesteregisterklasser. Notify- og vacuum-handlingene er simulerte og kontakter ingen telefon eller robot.
 
 Dekker: skjemaer, opprettelse av konfigurasjonsoppføring, validering av mottakere, fjerning av valgfrie kilder, opprettelse av plattformentiteter, faktiske tilstandslyttere og avregistrering, familieordlyd/lyd, uavhengige brytere, lagring, sonefilter, alarmforløp, kritisk alarm kontra test, Homey-alarm, uavhengig sending ved mottakerfeil, samme støvsugervarsel med Pause → Start, umiddelbar Start før robotens tilstand har oppdatert seg, avvisning av gamle knapper, sikre støvsugertester og gyldige transportavganger.
 
@@ -20,7 +20,7 @@ python -m unittest discover -s tests -v
 
 - HAs integrasjonslaster finner den egendefinerte integrasjonen.
 - En familieoppføring når `ConfigEntryState.LOADED`.
-- Seks brytere, to knapper og én statusentitet opprettes i entitetsregisteret.
+- Sju brytere (inkludert hovedbryteren), to knapper og én statusentitet opprettes i entitetsregisteret.
 - En posisjonsendring kaller den simulerte notify-handlingen med korrekt tekst.
 - HAs Options Flow åpner innstillingsskjemaet.
 - Integrasjonen avlastes uten feil.
@@ -44,3 +44,7 @@ HACS- og hassfest-jobbene på GitHub kan først bekreftes etter opplasting. Full
 Ni nye tester kontrollerer lokal 08:00-planlegging, ukedager og hjemmebetingelse, lagret dagsgrense, AI-tekst og vindens måleenhet, valgt AI-entitet, reservevarsel ved manglende AI-/værhandling, 60 sekunders jammed-timer, avbrutt og ny fastkjøring, attributtendringer uten nullstilling, deaktivering, oppstartsvarsel kontra reload samt avbrutt oppstartsforsinkelse ved avlasting. Tidsutløserne er simulert i testene; det er ikke ventet en hel morgen eller restartet fysisk utstyr.
 
 AI Task og weather.get_forecasts er simulert med HAs tjenesteregister og responsstøtte. Ingen eksterne AI-kall eller push-varsler er sendt under testingen.
+
+## Hovedbryter i 1.2.0
+
+Fire nye tester kontrollerer at hovedbryteren blokkerer automatiske familie- og alarmvarsler, bevarer individuelle valg, tillater eksplisitte testvarsler, lagres/gjenopprettes og bare opprettes for oppsett med flere brytere. Eldre lagringsformat uten hovedbryter migreres med hovedbryteren på. Innlastingstesten bekrefter nå ti familieentiteter.

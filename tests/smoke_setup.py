@@ -24,7 +24,7 @@ async def main():
   print('ENTRY STATE',entry.state)
   own=entity_registry.async_entries_for_config_entry(entity_registry.async_get(h),entry.entry_id)
   print('ENTITIES',len(own))
-  assert len(own)==9
+  assert len(own)==10
   h.states.async_set('switch.rune','on');await h.async_block_till_done()
   assert sent[-1]['message']=='Rune kom hjem.'
   print('EVENT NOTIFICATION OK')

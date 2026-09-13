@@ -46,6 +46,7 @@ class Runtime(ExtraNotifications):
         self.kind = entry.data['kind']
         self.store = Store(hass, 1, f'{DOMAIN}.{entry.entry_id}')
         self.enabled = {k:True for k in flags(self.kind)}
+        self.master_enabled = True
         self.listeners, self.unsubs = set(), []
         self.lock = asyncio.Lock()
         self.closed = False
@@ -71,12 +72,13 @@ class Runtime(ExtraNotifications):
                     if old and old.state in {'on','off'}:
                         self.enabled[f'{person}_{key}'] = old.state == 'on'
         self.enabled.update({k:bool(v) for k,v in saved.get('enabled',{}).items() if k in self.enabled})
+        self.master_enabled = bool(saved.get('master_enabled', True))
         self.last_weather_date = saved.get('last_weather_date')
         if not saved:
             await self.save_settings()
 
     async def save_settings(self):
-        await self.store.async_save({'enabled': self.enabled, 'last_weather_date': self.last_weather_date})
+        await self.store.async_save({'enabled': self.enabled, 'master_enabled': self.master_enabled, 'last_weather_date': self.last_weather_date})
 
     @callback
     def update(self):
@@ -84,7 +86,10 @@ class Runtime(ExtraNotifications):
             fn()
 
     async def toggle(self, key, value):
-        self.enabled[key] = value
+        if key == 'master':
+            self.master_enabled = value
+        else:
+            self.enabled[key] = value
         await self.save_settings()
         if self.kind == 'lock_jammed':
             self.arm_jam_timer()
@@ -204,7 +209,7 @@ class Runtime(ExtraNotifications):
                         await self.send(c['name'], c['message'], c['icon'])
 
     async def send(self, title, message, icon='mdi:bell-ring-outline', *, away=False, critical=False, tag=None, actions=None, quiet=False, test=False):
-        if self.closed:
+        if self.closed or (len(flags(self.kind)) > 1 and not self.master_enabled and not test):
             return
         c = self.cfg
         base = {'notification_icon':icon}
