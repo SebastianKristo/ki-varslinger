@@ -12,6 +12,9 @@ Varslingsintegrasjon for Home Assistant med oppsett i brukergrensesnittet, iPhon
 | Familie | Rune, Cybele og Sebastian. Egne brytere for kom hjem / forlot huset per person. |
 | Roborock | Oppdatering av samme varsel, romvisning, Pause/Start, Stopp og Hjem. |
 | Alarm | Aktivering, deaktivering og utløst alarm. Alarmenheter eller Homey-brytere. |
+| Værmelding – AI | Kl. 08 hver dag når Sebastian er hjemme; daglig prognose og AI-sammendrag. |
+| HA startet | Dato og klokkeslett ved faktisk HA-oppstart, med valgfri forsinkelse. |
+| Dørlås fastkjørt | Varsler etter ett sammenhengende minutt i jammed. |
 | Egne varsler | Valgfri entitet, fra-/tiltilstand, tekst, ikon og sonefilter. |
 | Ruter | Skolefilter, kalenderpåminnelse og avganger fra eksisterende transportsensorer. |
 
@@ -40,32 +43,32 @@ Støvsugeren bruker vanlige Companion-varsler med samme `tag`, ikke iOS Live Act
 
 ## Publiser fra Mac
 
-Last ned `ki-varslinger-1.0.1.zip` til `~/Downloads`. Kjør:
+Last ned `ki-varslinger-1.1.0.zip` til `~/Downloads`. Kjør:
 
 ```bash
-mkdir -p "$HOME/Downloads/ki-varslinger-1.0.1"
-ditto -x -k "$HOME/Downloads/ki-varslinger-1.0.1.zip" "$HOME/Downloads/ki-varslinger-1.0.1"
-bash "$HOME/Downloads/ki-varslinger-1.0.1/ki-varslinger/scripts/publish-macos.sh" 1.0.1
+mkdir -p "$HOME/Downloads/ki-varslinger-1.1.0"
+ditto -x -k "$HOME/Downloads/ki-varslinger-1.1.0.zip" "$HOME/Downloads/ki-varslinger-1.1.0"
+bash "$HOME/Downloads/ki-varslinger-1.1.0/ki-varslinger/scripts/publish-macos.sh" 1.1.0
 ```
 
 Skriptet bruker `~/Documents/HomeAssistant/ki-varslinger`, eksisterende GitHub CLI-innlogging og grenen `main`. Det oppdaterer repoets beskrivelse, topics og Issues, pusher commit/tag og publiserer en release med [RELEASE.md](RELEASE.md) og ZIP-en. Trenger du avhengighetene: `brew install git gh python rsync`.
 
 Lokale endringer og eksisterende versjonstagger stopper skriptet. Det overskriver ikke tagger og bruker ikke force-push. Nye versjoner må få nytt nummer i manifest, enhetens `sw_version`, releasenotat og pakkenavn. Bruk samme versjon som argument.
 
-Hvis push feiler etter at lokal commit/tag er opprettet, ligger arbeidet igjen lokalt. Løs den rapporterte feilen og kjør fra repoet, for eksempel for 1.0.1:
+Hvis push feiler etter at lokal commit/tag er opprettet, ligger arbeidet igjen lokalt. Løs den rapporterte feilen og kjør fra repoet, for eksempel for 1.1.0:
 
 ```bash
 cd "$HOME/Documents/HomeAssistant/ki-varslinger"
-git push --atomic origin main refs/tags/v1.0.1
+git push --atomic origin main refs/tags/v1.1.0
 ```
 
 Hvis kun release-opprettelsen feiler etter vellykket push, kan den fullføres uten ny commit/tag:
 
 ```bash
 cd "$HOME/Documents/HomeAssistant/ki-varslinger"
-gh release create v1.0.1 "$HOME/Downloads/ki-varslinger-1.0.1.zip" \
+gh release create v1.1.0 "$HOME/Downloads/ki-varslinger-1.1.0.zip" \
   --repo SebastianKristo/ki-varslinger --verify-tag \
-  --title "KI Varslinger 1.0.1" --notes-file RELEASE.md
+  --title "KI Varslinger 1.1.0" --notes-file RELEASE.md
 ```
 
 Sjekk om releasen allerede finnes før du kjører gjenopprettingskommandoen. Ved manglende Git-identitet må `git config user.name` og `git config user.email` settes til dine egne verdier.

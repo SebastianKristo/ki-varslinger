@@ -12,8 +12,8 @@ class KIStatus(KIEntity, SensorEntity):
         super().__init__(r,'status','Varslingsstatus','mdi:message-badge-outline')
     @property
     def native_value(self):
-        return 'Sendefeil' if self.runtime.last_error else 'Sendt' if self.runtime.last_sent else 'Klar'
+        return 'Sendefeil' if self.runtime.last_error else 'Datakildefeil' if self.runtime.last_source_error else 'Sendt' if self.runtime.last_sent else 'Klar'
     @property
     def extra_state_attributes(self):
         r=self.runtime
-        return {'siste_melding':r.last_message,'siste_sendt':r.last_sent,'siste_feil':r.last_error,'type':r.kind}
+        return {'siste_melding':r.last_message,'siste_sendt':r.last_sent,'siste_feil':r.last_error,'datakildefeil':r.last_source_error,'type':r.kind}

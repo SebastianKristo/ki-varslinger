@@ -22,7 +22,7 @@ def schema(hass, kind, saved):
     phone = selector.SelectSelector(selector.SelectSelectorConfig(options=services, multiple=True, custom_value=True))
     add('name', text, KINDS[kind])
     add('ios_targets', phone, [x for x in services if x == 'mobile_app_sebastian_iphone_17_pro'])
-    add('android_targets', phone, [x for x in services if x == 'mobile_app_sebastian_pixel_9_pro_fold'])
+    add('android_targets', phone, [x for x in services if x in (['mobile_app_sebastian_pixel_9_pro_fold', 'mobile_app_sebastian_oneplus_15'] if kind in {'weather_ai','ha_start','lock_jammed'} else ['mobile_app_sebastian_pixel_9_pro_fold'])])
     add('sound', text, 'default')
     add('sound_away', text, 'default')
     add('channel', text, 'KI Varsler')
@@ -48,6 +48,21 @@ def schema(hass, kind, saved):
         add('icon', selector.IconSelector(), 'mdi:bell-ring-outline')
         add('zone_person', entity(['person', 'device_tracker']), required=False)
         add('zones', multi(['zone']), [])
+    elif kind == 'weather_ai':
+        known = 'weather.forecast_home'
+        add('weather_entity', entity(['weather']), known if hass.states.get(known) else None)
+        add('at', selector.TimeSelector(), '08:00:00')
+        add('weekdays', selector.SelectSelector(selector.SelectSelectorConfig(multiple=True, options=[{'value':k,'label':v} for k,v in [('mon','Mandag'),('tue','Tirsdag'),('wed','Onsdag'),('thu','Torsdag'),('fri','Fredag'),('sat','Lørdag'),('sun','Søndag')]])), ['mon','tue','wed','thu','fri','sat','sun'])
+        known = 'switch.sebastian_posisjon_hjemme_borte'
+        add('home_entity', entity(['switch','input_boolean','binary_sensor','person','device_tracker']), known if hass.states.get(known) else None)
+        add('home_state', text, 'on')
+        add('ai_entity', entity(['ai_task']), required=False)
+    elif kind == 'ha_start':
+        add('startup_delay', selector.NumberSelector(selector.NumberSelectorConfig(min=0,max=300,mode='box',unit_of_measurement='s')), 15)
+    elif kind == 'lock_jammed':
+        known = 'lock.dorlas_blatann'
+        add('entity', entity(['lock']), known if hass.states.get(known) else None)
+        add('jam_seconds', selector.NumberSelector(selector.NumberSelectorConfig(min=1,max=3600,mode='box',unit_of_measurement='s')), 60)
     elif kind == 'ruter':
         add('trackers', multi(['person', 'device_tracker']), [s.entity_id for s in hass.states.async_all('device_tracker') if s.entity_id in ['device_tracker.sebastian_iphone_17_pro', 'device_tracker.sebastian_pixel_9_pro_fold']])
         add('zones', multi(['zone']), [s.entity_id for s in hass.states.async_all('zone') if s.entity_id.startswith('zone.skole')])
@@ -75,6 +90,8 @@ def errors(hass, kind, data):
         return {'base': 'missing_person'}
     if kind == 'ruter' and (not data.get('trackers') or not data.get('zones') or not data.get('tram_sensors')):
         return {'base': 'missing_ruter'}
+    if kind == 'weather_ai' and not data.get('weekdays'):
+        return {'base': 'no_weekdays'}
     return {}
 
 

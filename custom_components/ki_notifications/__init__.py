@@ -10,6 +10,7 @@ from homeassistant.helpers.event import async_track_state_change_event, async_tr
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 from homeassistant.components.zone import in_zone
+from .extra_notifications import ExtraNotifications
 from .const import DOMAIN, PEOPLE, INVALID, flags
 from .logic import alarm_event, presence_event, vacuum_actions, minutes, choose_departure
 
@@ -38,7 +39,7 @@ async def async_unload_entry(hass, entry):
 async def async_remove_entry(hass, entry):
     await Store(hass, 1, f'{DOMAIN}.{entry.entry_id}').async_remove()
 
-class Runtime:
+class Runtime(ExtraNotifications):
     def __init__(self, hass, entry):
         self.hass, self.entry = hass, entry
         self.cfg = dict(entry.options or entry.data)
@@ -55,6 +56,11 @@ class Runtime:
         self.token = secrets.token_hex(16)
         self.last_calendar = None
         self.last_ruter = None
+        self.last_source_error = ''
+        self.last_weather_date = None
+        self.startup_cancel = None
+        self.jam_cancel = None
+        self.jam_generation = 0
 
     async def load(self):
         saved = await self.store.async_load() or {}
@@ -65,8 +71,12 @@ class Runtime:
                     if old and old.state in {'on','off'}:
                         self.enabled[f'{person}_{key}'] = old.state == 'on'
         self.enabled.update({k:bool(v) for k,v in saved.get('enabled',{}).items() if k in self.enabled})
+        self.last_weather_date = saved.get('last_weather_date')
         if not saved:
-            await self.store.async_save({'enabled': self.enabled})
+            await self.save_settings()
+
+    async def save_settings(self):
+        await self.store.async_save({'enabled': self.enabled, 'last_weather_date': self.last_weather_date})
 
     @callback
     def update(self):
@@ -75,7 +85,9 @@ class Runtime:
 
     async def toggle(self, key, value):
         self.enabled[key] = value
-        await self.store.async_save({'enabled':self.enabled})
+        await self.save_settings()
+        if self.kind == 'lock_jammed':
+            self.arm_jam_timer()
         self.update()
         if self.kind == 'vacuum':
             self.token = secrets.token_hex(16)
@@ -93,6 +105,7 @@ class Runtime:
 
     def listen(self):
         c = self.cfg
+        self.extra_listen()
         entities = [c[p] for p in PEOPLE] if self.kind == 'family' else ([c['entity']] if 'entity' in c else [])
         if self.kind == 'alarm' and c.get('triggered_sensor'):
             entities.append(c['triggered_sensor'])
@@ -110,6 +123,7 @@ class Runtime:
 
     def close(self):
         self.closed = True
+        self.extra_close()
         self.token = secrets.token_hex(16)
         for unsub in self.unsubs:
             unsub()
@@ -139,6 +153,9 @@ class Runtime:
             if self.closed:
                 return
             old, new = event.data.get('old_state'), event.data.get('new_state')
+            if self.kind == 'lock_jammed':
+                await self.jam_changed(old, new)
+                return
             if old is None or new is None or old.state in INVALID or new.state in INVALID:
                 return
             c = self.cfg
@@ -342,5 +359,11 @@ class Runtime:
                 await self.vacuum_notice(quiet=False,test=True)
             elif self.kind == 'ruter':
                 await self.ruter_notice(test=True)
+            elif self.kind == 'weather_ai':
+                await self.weather_notice(test=True)
+            elif self.kind == 'ha_start':
+                await self.startup_notice(test=True)
+            elif self.kind == 'lock_jammed':
+                await self.jam_notice(test=True)
             else:
                 await self.send('🔔 Test – '+self.cfg['name'], self.cfg['message'], self.cfg['icon'], test=True)

@@ -42,7 +42,15 @@
           "ride": "Reisetid trikk til Majorstuen",
           "transfer": "Overgangstid",
           "before_end": "Minutter før forelesningen slutter",
-          "triggered_sensor": "Separat bryter/sensor for utløst alarm (Homey, valgfritt)"
+          "triggered_sensor": "Separat bryter/sensor for utløst alarm (Homey, valgfritt)",
+          "weather_entity": "Værsensor",
+          "at": "Klokkeslett (Home Assistants tidssone)",
+          "weekdays": "Ukedager",
+          "home_entity": "Hjemme/borte-entitet",
+          "home_state": "Tilstand som betyr hjemme (on eller home)",
+          "ai_entity": "AI Task-entitet (valgfritt, ellers standard fra HA)",
+          "startup_delay": "Ventetid etter oppstart",
+          "jam_seconds": "Sammenhengende tid fastkjørt før varsel"
         }
       }
     },
@@ -52,7 +60,8 @@
       "duplicate_target": "Samme telefon kan ikke være både iPhone og Android.",
       "duplicate_source": "Velg ulike brytere for de tre personene.",
       "missing_person": "Velg en person/telefon når du bruker sonefilter.",
-      "missing_ruter": "Velg minst én telefon/person, skolesone og trikkesensor."
+      "missing_ruter": "Velg minst én telefon/person, skolesone og trikkesensor.",
+      "no_weekdays": "Velg minst én ukedag."
     }
   },
   "options": {
@@ -90,7 +99,15 @@
           "ride": "Reisetid trikk til Majorstuen",
           "transfer": "Overgangstid",
           "before_end": "Minutter før forelesningen slutter",
-          "triggered_sensor": "Separat bryter/sensor for utløst alarm (Homey, valgfritt)"
+          "triggered_sensor": "Separat bryter/sensor for utløst alarm (Homey, valgfritt)",
+          "weather_entity": "Værsensor",
+          "at": "Klokkeslett (Home Assistants tidssone)",
+          "weekdays": "Ukedager",
+          "home_entity": "Hjemme/borte-entitet",
+          "home_state": "Tilstand som betyr hjemme (on eller home)",
+          "ai_entity": "AI Task-entitet (valgfritt, ellers standard fra HA)",
+          "startup_delay": "Ventetid etter oppstart",
+          "jam_seconds": "Sammenhengende tid fastkjørt før varsel"
         }
       }
     },
@@ -100,7 +117,8 @@
       "duplicate_target": "Samme telefon kan ikke være både iPhone og Android.",
       "duplicate_source": "Velg ulike brytere for de tre personene.",
       "missing_person": "Velg en person/telefon når du bruker sonefilter.",
-      "missing_ruter": "Velg minst én telefon/person, skolesone og trikkesensor."
+      "missing_ruter": "Velg minst én telefon/person, skolesone og trikkesensor.",
+      "no_weekdays": "Velg minst én ukedag."
     }
   }
 }

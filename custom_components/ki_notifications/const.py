@@ -1,5 +1,5 @@
 DOMAIN = 'ki_notifications'
-KINDS = {'family': 'Familie – hjemme/borte', 'vacuum': 'Støvsuger', 'alarm': 'Alarm', 'state': 'Egendefinert tilstandsvarsel', 'ruter': 'Ruter – fra skolen'}
+KINDS = {'family': 'Familie – hjemme/borte', 'vacuum': 'Støvsuger', 'alarm': 'Alarm', 'state': 'Egendefinert tilstandsvarsel', 'ruter': 'Ruter – fra skolen', 'weather_ai': 'Værmelding – AI', 'ha_start': 'Home Assistant startet', 'lock_jammed': 'Dørlås fastkjørt'}
 PEOPLE = {'rune': 'Rune', 'cybele': 'Cybele', 'sebastian': 'Sebastian'}
 INVALID = {'unknown', 'unavailable', ''}
 

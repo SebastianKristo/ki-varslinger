@@ -1,4 +1,4 @@
-# KI Varslinger 1.0.1
+# KI Varslinger 1.1.0
 
 En egendefinert Home Assistant-integrasjon for familie, støvsuger, alarm, egne tilstandsendringer og Ruter-varsler. Oppsett og endringer gjøres i brukergrensesnittet. Ingen YAML-pakke eller KI-testskript kreves.
 
@@ -104,6 +104,32 @@ Transportformatet følger sensorene fra din tidligere Ruter-automasjon: tilstand
 Trikk filtreres etter retningsord og tidligste avgang som rekker gangtiden. Buss velges etter trikkens avgangstid + reisetid + overgangstid. Gangtiden legges ikke til to ganger. Manglende/rutemessig uoppnåelige avganger vises som manglende, ikke som en oppdiktet avgang. T-banen vises separat uten å love at overgangen rekkes.
 
 Kalenderen kontrolleres hvert 30. sekund og bruker kalenderentitetens aktive hendelse. Overlappende hendelser, heldagshendelser og historikk etter nedetid håndteres ikke som en full kalenderkø. Ingen avganger hentes direkte fra Ruter/Entur av denne integrasjonen; de eksisterende transportsensorene leverer dataene.
+
+## Værmelding – AI
+
+Legg til oppsettet **Værmelding – AI**. Standard er klokken **08:00:00 alle ukedager**, i Home Assistants tidssone, med `weather.forecast_home` og hjemmebryteren `switch.sebastian_posisjon_hjemme_borte`. Tilstanden som betyr hjemme er `on`; ved bruk av en `person` er det vanligvis `home`.
+
+Ved klokkeslettet må hjemmebetingelsen være oppfylt. Det sendes ingen innhenting av et tapt morgenvarsel når du kommer hjem senere. En planlagt sending kjøres maksimalt én gang per lokal dato; dette huskes også ved omstart. Ukedager og tid kan endres i Alternativer.
+
+Integrasjonen kaller `weather.get_forecasts` med `daily`, velger den daterte prognosen for i dag og sender tilgjengelige verdier til `ai_task.generate_data`. Oppgaven ber om 2–3 vennlige setninger på norsk med råd om klær. Måleenhetene leses fra værsensoren; vind antas ikke å være m/s. AI Task må være satt opp i HA, enten som standard AI Task eller som entiteten du velger i oppsettet. Værdataene behandles av din valgte AI-leverandør.
+
+Varslet har tittelen **God morgen ☀️** og værikon. Hvis værprognosen eller AI-tjenesten feiler, brukes tilgjengelige målinger i et enkelt tekstvarsel; feilen vises under **Datakildefeil** i statusentiteten. Manglende data diktes ikke opp. Testknappen omgår tid, hjemmebetingelse og dagsgrense, og kaller også AI-tjenesten når data finnes.
+
+## Home Assistant startet
+
+Legg til **Home Assistant startet**. Ved en faktisk HA-oppstart sendes «Home Assistant ble startet på nytt dd.mm.åååå kl tt:mm:ss.», med Home Assistant-ikon. Tidspunktet er start-hendelsens tidspunkt i HAs tidssone.
+
+Standard ventetid er **15 sekunder** etter at HA er startet, slik at Companion-handlingene rekker å bli klare. Du kan endre dette til 0–300 sekunder. Installasjon eller vanlig reload av integrasjonen mens HA allerede kjører sender ikke oppstartsvarsel. Testknappen sender en melding merket TEST uten å restarte noe. Deaktivering blokkerer sending; avlasting før ventetiden er utløpt avbryter den planlagte sendingen.
+
+## Dørlås fastkjørt
+
+Legg til **Dørlås fastkjørt**, velg `lock.dorlas_blatann` og behold standard **60 sekunder**. Meldingen blir «Inngangsdørlåsen er fastkjørt og får ikke låst seg.», med `mdi:lock-alert`.
+
+Låsen må være sammenhengende i `jammed` i den valgte tiden. `locked`, `unlocked`, `unknown`, `unavailable` eller en fjernet entitet avbryter nedtellingen. Attributtendringer som batterinivå starter ikke tiden på nytt. Etter ett varsel sendes ingen påminnelser før en ny fastkjøring. Er låsen allerede fastkjørt ved oppstart/reload eller når varselbryteren slås på, observeres en ny full periode før varsel. Testknappen venter ikke og betjener aldri låsen.
+
+Alle tre nye oppsett foreslår iPhone, Pixel og OnePlus hvis de respektive `mobile_app`-handlingene finnes. Mottakere og lyd velges separat per oppsett. Låsvarslet bruker disse eksplisitte mottakerne fremfor den generelle `notify.notify`-handlingen.
+
+Deaktiver de tre gamle automasjonene når de nye oppsettene er testet, ellers kan både gammel og ny løsning sende varsler.
 
 ## Egendefinerte lyder
 

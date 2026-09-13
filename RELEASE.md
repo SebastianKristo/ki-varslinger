@@ -1,15 +1,13 @@
-# KI Varslinger 1.0.1
+# KI Varslinger 1.1.0
 
-Første repo-utgave for installasjon gjennom HACS som egendefinert integrasjon.
+Tre nye oppsett i integrasjonens brukergrensesnitt:
 
-- Samler familievarsler, Roborock med varselknapper, alarmvarsler, Ruter og egne tilstandsvarsler.
-- Oppsett i Home Assistant-grensesnittet, testknapper og varslingsstatus.
-- Separate alarmvarsler for aktivering, deaktivering og utløst alarm.
-- HACS-metadata, lokale ikoner, dokumentasjon og lenke til feilrapportering.
-- GitHub Actions for HACS, hassfest og lokale HA-tester.
-- Mac-skript for commit, tag og release uten force-push.
-- Beholder integrasjonsdomenet ki_notifications og lagrede oppsett fra 1.0.0.
+- **Værmelding – AI:** standard kl. 08 alle dager når Sebastian er hjemme. Daglig prognose, korrekte måleenheter, valgfri AI Task-entitet og et enkelt reservevarsel hvis AI feiler.
+- **Home Assistant startet:** oppstartsvarsel med dato og klokkeslett. Standard 15 sekunders forsinkelse; reload av integrasjonen gir ikke oppstartsvarsel.
+- **Dørlås fastkjørt:** varsel etter 60 sammenhengende sekunder i jammed. Avbrytes ved normal eller ukjent tilstand.
 
-Krever Home Assistant 2025.12.5 eller nyere. Installer fra HACS som egendefinert repo og start Home Assistant på nytt. WAV-lydene importeres separat i Companion-appen på iPhone.
+Hvert oppsett har egen av/på-bryter, testknapp, mottakervalg og iPhone-lyd. De tre nye oppsettene foreslår også Sebastian sin OnePlus når notify-handlingen finnes. Statusentiteten viser feil fra vær-/AI-kilder.
 
-Funksjonstester bruker simulerte telefon-/støvsugerhandlinger. Telefonlevering og fysisk utstyr må kontrolleres etter installasjon. Se LES_MEG.md og TESTING.md.
+Eksisterende oppsett beholdes. Nye varseltyper legges til manuelt etter oppdatering og HA-omstart. Deaktiver tilsvarende gamle automasjoner etter testing. Oppsettet leser ikke de gamle input_select-lydvelgerne; sett lydfilnavnet i integrasjonens Alternativer.
+
+Krever HA 2025.12.5 eller nyere. Testene bruker simulerte tjenester; telefonene og din valgte AI-leverandør er ikke kontaktet i testingen.
