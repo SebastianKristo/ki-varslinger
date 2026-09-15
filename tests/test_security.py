@@ -101,6 +101,52 @@ class SecurityTests(unittest.IsolatedAsyncioTestCase):
             self.hass.states.async_set('input_number.delay','unavailable')
             await self.change(helper,'input_number.delay','90','unavailable')
             self.assertIsNone(helper.auto_cancel)
+    async def test_delay_options_override_saved_number_and_survive_reload(self):
+        r = self.auto()
+        await r.load()
+        await r.set_autolock_delay(50)
+        changed = self.auto()
+        changed.cfg['autolock_delay'] = 90
+        await changed.load()
+        self.assertEqual(changed.autolock_seconds, 90)
+        await changed.set_autolock_delay(60)
+        again = self.auto()
+        again.cfg['autolock_delay'] = 90
+        await again.load()
+        self.assertEqual(again.autolock_seconds, 60)
+
+    async def test_autolock_status_explains_raw_state_mismatch(self):
+        r = self.auto()
+        status = sensor.KIStatus(r)
+        self.assertEqual(status.native_value, 'Av')
+        await r.toggle('enabled', True)
+        self.hass.states.async_set('sensor.door', 'off')
+        self.assertEqual(status.native_value, 'Kontroller dørverdier')
+        self.assertEqual(status.extra_state_attributes['dorverdi'], 'off')
+        self.assertEqual(status.extra_state_attributes['forventet_lukket'], 'closed')
+        self.assertNotIn('test-code', str(status.extra_state_attributes))
+        self.assertFalse(self.calls)
+
+    async def test_explicit_on_off_configuration_countdown_and_attribute_updates(self):
+        r = self.auto()
+        r.cfg.update(door_open='on', door_closed='off')
+        await r.toggle('enabled', True)
+        self.hass.states.async_set('sensor.door', 'off')
+        self.hass.states.async_set('lock.front', 'unlocked')
+        status = sensor.KIStatus(r)
+        self.assertEqual(status.native_value, 'Venter på åpning og lukking')
+        with patch(MODULE+'async_call_later', return_value=Mock()) as later:
+            await self.change(r, 'sensor.door', 'on', 'off')
+            self.assertEqual(status.native_value, 'Venter på autolås')
+            self.assertIsNotNone(status.extra_state_attributes['planlagt_lasing'])
+            await self.change(r, 'sensor.door', 'off', 'off')
+            self.assertEqual(later.call_count, 1)
+            await later.call_args.args[2](None)
+            self.assertEqual(self.calls[-1][:2], ('lock', 'lock'))
+            self.assertIsNone(status.extra_state_attributes['planlagt_lasing'])
+        self.hass.states.async_set('lock.front', 'locked')
+        self.assertEqual(status.native_value, 'Døren er låst')
+
     async def test_alarmo_home_mode_echo_does_not_rearm_away(self):
         r=self.sync();await r.toggle('enabled',True)
         self.hass.states.async_set(r.cfg['entity'],'armed_home')

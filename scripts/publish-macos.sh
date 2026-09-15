@@ -1,11 +1,11 @@
 #!/bin/bash
-# Bruk: bash publish-macos.sh 2.0.0 [sti/til/ki-varslinger-2.0.0.zip]
+# Bruk: bash publish-macos.sh 2.0.1 [sti/til/ki-varslinger-2.0.1.zip]
 # Kjorer pa macOS med Bash 3.2+, Git, GitHub CLI, Python 3 og rsync.
 set -euo pipefail
 
 V="${1:-}"
 if [[ ! "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "Bruk: bash $0 2.0.0 [sti/til/ki-varslinger-2.0.0.zip]" >&2
+  echo "Bruk: bash $0 2.0.1 [sti/til/ki-varslinger-2.0.1.zip]" >&2
   exit 1
 fi
 GH_REPO="SebastianKristo/ki-varslinger"
@@ -92,11 +92,11 @@ gh repo edit "$GH_REPO" --enable-issues --description "Varsling, autolas, Heimda
 
 git add -- custom_components/ki_notifications .github .gitignore hacs.json README.md LES_MEG.md TESTING.md RELEASE.md LICENSE scripts sounds tests
 git diff --cached --quiet && { echo "Ingen endringer aa publisere." >&2; exit 1; }
-git commit -m "Varslinger og sikkerhet v$V"
-git tag -a "$TAG" -m "Varslinger og sikkerhet $V"
+git commit -m "KI Varslinger og sikkerhet v$V"
+git tag -a "$TAG" -m "KI Varslinger og sikkerhet $V"
 # Publiser commit og tag samlet. Ingen force-push.
 git_gh push --atomic origin main "refs/tags/$TAG"
 
-gh release create "$TAG" "$ZIP" --repo "$GH_REPO" --verify-tag --title "Varslinger og sikkerhet $V" --notes-file RELEASE.md
+gh release create "$TAG" "$ZIP" --repo "$GH_REPO" --verify-tag --title "KI Varslinger og sikkerhet $V" --notes-file RELEASE.md
 printf '\nPublisert: https://github.com/%s/releases/tag/%s\n' "$GH_REPO" "$TAG"
 printf 'Kontroller GitHub Actions: https://github.com/%s/actions\n' "$GH_REPO"

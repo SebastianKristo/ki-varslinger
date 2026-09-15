@@ -1,13 +1,11 @@
-# Varslinger og sikkerhet 2.0.0
+# KI Varslinger og sikkerhet 2.0.1
 
-Integrasjonen heter nå **Varslinger og sikkerhet** i Home Assistant og HACS. Repoet og domenet `ki_notifications` beholdes; eksisterende varsler og hovedbrytere videreføres.
+- Navnet er nå **KI Varslinger og sikkerhet** i Home Assistant og HACS. Domenet og eksisterende entitetsidentiteter beholdes.
+- Rettet at en tidligere lagret ventetid kunne overstyre ny ventetid valgt i innstillingene. Endringer via tallentiteten huskes fortsatt etter omstart.
+- Sikkerhetsstatus viser hvorfor autolåsen venter, inkludert feil dørverdier og utilgjengelig sensor/lås. Attributtene viser rå dørverdi, forventede verdier, låstilstand, ventetidskilde og planlagt låsetid.
+- Status oppdateres når døren/låsen endres og nedtelling starter eller avsluttes.
+- Tydeligere felthjelp for rå dørverdier og input_number som overstyrer ventetiden.
 
-Nye oppsett:
+Etter oppdatering: start Home Assistant på nytt. Kontroller at Autolås-bryteren er på og at verdiene i oppsettet samsvarer med råverdiene for dørsensoren. Åpne og lukk døren for å starte en ny nedtelling. Oppstart eller aktivering mens døren allerede er lukket starter ikke nedtelling.
 
-- **Autolås:** lås etter åpen → lukket på dørsensoren. Eget tallfelt for ventetid, eller eksisterende input_number-helper. Avbryter ved åpning/ukjent dørtilstand og sjekker låstilstanden før kommando.
-- **Heimdall ↔ Alarmo:** toveis aktivering/deaktivering med ekkogjenkjenning. Kameraenes privacy mode følger bekreftet Alarmo-tilstand. Ingen automatisk endring fra et gammelt øyeblikksbilde ved oppstart/reload.
-- **Ansiktsgjenkjenning – dørlås:** tre lokale webhooks, låsekode i HA-oppsettet og sensor for Sebastian/Rune/Cybele etter bekreftet opplåsing. POST/PUT, valgfri GET; HEAD utfører ingen opplåsing.
-
-Sikkerhetsfunksjonene starter avslått. Legg til ønsket oppsett, kontroller rå sensorverdier, fyll inn kode og slå på funksjonsbryteren. Deaktiver gamle autolås-/synk-/webhook-automasjoner før nye funksjoner tas i bruk.
-
-Koder og webhook-ID-er er ikke lagt inn i repoet. De fylles inn lokalt i Home Assistant. De medfølgende testene bruker simulerte enheter og har ikke låst opp en fysisk dør eller endret en fysisk alarm.
+Den konkrete årsaken hos brukeren er ikke bekreftet uten faktiske sensorverdier. Se TESTING.md for lokal validering. Ingen fysisk lås er betjent i testene.

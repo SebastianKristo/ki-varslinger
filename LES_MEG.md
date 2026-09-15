@@ -1,4 +1,4 @@
-# Varslinger og sikkerhet 2.0.0
+# KI Varslinger og sikkerhet 2.0.1
 
 En egendefinert Home Assistant-integrasjon for familie, støvsuger, alarm, egne tilstandsendringer og Ruter-varsler. Oppsett og endringer gjøres i brukergrensesnittet. Ingen YAML-pakke eller KI-testskript kreves.
 
@@ -7,7 +7,7 @@ En egendefinert Home Assistant-integrasjon for familie, støvsuger, alarm, egne 
 1. Pakk ut ZIP-filen på datamaskinen.
 2. Kopier mappen `custom_components/ki_notifications` til `/config/custom_components/ki_notifications` i Home Assistant. Filen `/config/custom_components/ki_notifications/manifest.json` skal ligge direkte der, uten en ekstra undermappe.
 3. Start Home Assistant på nytt.
-4. Gå til **Innstillinger → Enheter og tjenester → Legg til integrasjon**. Søk etter **Varslinger og sikkerhet**. Oppdater nettlesersiden hvis den ikke vises.
+4. Gå til **Innstillinger → Enheter og tjenester → Legg til integrasjon**. Søk etter **KI Varslinger og sikkerhet**. Oppdater nettlesersiden hvis den ikke vises.
 5. Velg typen varsling og fullfør skjemaet. Legg til integrasjonen igjen for hver ekstra type eller regel.
 6. Åpne enheten integrasjonen oppretter. Her finner du av/på-brytere, testknapper og **Varslingsstatus**. Legg ønskede entiteter på dashbordet med **Legg til på dashbord**.
 7. Bruk **Konfigurer/Alternativer** på integrasjonsoppføringen for å endre mottakere, kilder, lyd og øvrige innstillinger.
@@ -29,9 +29,9 @@ Familieoppsettet leser de gamle seks `input_boolean.posisjonsvarsel_*`-bryterne 
 
 Lyder velges i det nye oppsettet; de gamle `input_select`-lydvelgerne styrer ikke integrasjonen. Start gjerne med `default` for første test.
 
-## Sikkerhetsfunksjoner – nytt i 2.0.0
+## Sikkerhetsfunksjoner – nytt i 2.0.1
 
-Navnet er endret til **Varslinger og sikkerhet** i HA/HACS. Domenet `ki_notifications`, repoet `SebastianKristo/ki-varslinger` og gamle varslingsoppsett beholdes. De tre sikkerhetsfunksjonene legges til som egne oppsett og starter **avslått**. De har ingen testknapp som kan betjene en fysisk lås eller alarm.
+Navnet er endret til **KI Varslinger og sikkerhet** i HA/HACS. Domenet `ki_notifications`, repoet `SebastianKristo/ki-varslinger` og gamle varslingsoppsett beholdes. De tre sikkerhetsfunksjonene legges til som egne oppsett og starter **avslått**. De har ingen testknapp som kan betjene en fysisk lås eller alarm.
 
 Sikkerhetsoppsettene krever ikke en telefonmottaker. De styrer enhetene og har en statusentitet. Ønsker du push-varsler om alarmtilstand eller fastkjørt lås, bruker du de egne varslingsoppsettene som allerede finnes i integrasjonen.
 
@@ -227,7 +227,7 @@ På Pixel velger du lyd i Android-innstillingene for Home Assistants varselkanal
 
 ## Feilsøking og kontroll
 
-Åpne **Varslingsstatus** på integrasjonens enhet. Attributtene viser siste melding, tidspunktet da minst én notify-handling lyktes, og siste sendefeil. «Sendt» betyr at Home Assistant-handlingen lyktes, ikke at telefonen bekreftet levering. Feil på én mottaker stopper ikke forsøket til den andre. Feilen logges også under Varslinger og sikkerhet i HA-loggen.
+Åpne **Varslingsstatus** på integrasjonens enhet. Attributtene viser siste melding, tidspunktet da minst én notify-handling lyktes, og siste sendefeil. «Sendt» betyr at Home Assistant-handlingen lyktes, ikke at telefonen bekreftet levering. Feil på én mottaker stopper ikke forsøket til den andre. Feilen logges også under KI Varslinger og sikkerhet i HA-loggen.
 
 Hvis test virker, men ordinære varsler mangler: kontroller den nye varselbryteren, faktisk tilstandsendring på kilden og eventuelt sonefilter. Har en entitet fått nytt ID, velg den på nytt i Alternativer. Endringer lastes inn uten full omstart.
 

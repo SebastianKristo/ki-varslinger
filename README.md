@@ -1,9 +1,9 @@
-# Varslinger og sikkerhet
+# KI Varslinger og sikkerhet
 
 [![Validate](https://github.com/SebastianKristo/ki-varslinger/actions/workflows/validate.yml/badge.svg)](https://github.com/SebastianKristo/ki-varslinger/actions/workflows/validate.yml)
 [![Release](https://img.shields.io/github/v/release/SebastianKristo/ki-varslinger)](https://github.com/SebastianKristo/ki-varslinger/releases)
 
-![Varslinger og sikkerhet](custom_components/ki_notifications/brand/icon.png)
+![KI Varslinger og sikkerhet](custom_components/ki_notifications/brand/icon.png)
 
 Integrasjon for varslinger og sikkerhet i Home Assistant med oppsett i brukergrensesnittet, iPhone/Android-mottakere, testknapper og status ved sendefeil.
 
@@ -33,16 +33,16 @@ Krever Home Assistant **2025.12.5 eller nyere**, HACS og Home Assistant Companio
 
 1. Åpne **HACS → menyen ⋮ → Egendefinerte repositorier / Custom repositories**.
 2. Legg til `https://github.com/SebastianKristo/ki-varslinger` med type **Integrasjon / Integration**.
-3. Finn **Varslinger og sikkerhet**, velg og last ned siste release.
+3. Finn **KI Varslinger og sikkerhet**, velg og last ned siste release.
 4. Start Home Assistant på nytt.
-5. Velg **Innstillinger → Enheter og tjenester → Legg til integrasjon → Varslinger og sikkerhet**.
+5. Velg **Innstillinger → Enheter og tjenester → Legg til integrasjon → KI Varslinger og sikkerhet**.
 6. Legg til ett oppsett per ønsket varseltype. Testknapper og brytere finnes på den tilhørende enheten.
 
-Navnet i HA og HACS er **Varslinger og sikkerhet**. Repoet og integrasjonsdomenet (`ki_notifications`) beholdes, slik at eksisterende oppsett kan oppgraderes.
+Navnet i HA og HACS er **KI Varslinger og sikkerhet**. Repoet og integrasjonsdomenet (`ki_notifications`) beholdes, slik at eksisterende oppsett kan oppgraderes.
 
 Repoet må ha fått kode og release før det kan installeres på denne måten. Dette er støtte for et egendefinert HACS-repo, ikke godkjenning i HACS-standardkatalogen. HACS installerer integrasjonsmappen fra versjonstaggen; den vedlagte ZIP-en er en komplett kildekodepakke for terminalopplasting og manuell bruk.
 
-**Oppgradering fra manuell installasjon:** domenet er fortsatt `ki_notifications`. Eksisterende oppsett og brytervalg beholdes når HACS overtar den samme integrasjonsmappen. Integrasjonen heter nå Varslinger og sikkerhet i grensesnittet.
+**Oppgradering fra manuell installasjon:** domenet er fortsatt `ki_notifications`. Eksisterende oppsett og brytervalg beholdes når HACS overtar den samme integrasjonsmappen. Integrasjonen heter nå KI Varslinger og sikkerhet i grensesnittet.
 
 ## Bruk og migrering
 
@@ -52,32 +52,32 @@ Støvsugeren bruker vanlige Companion-varsler med samme `tag`, ikke iOS Live Act
 
 ## Publiser fra Mac
 
-Last ned `ki-varslinger-2.0.0.zip` til `~/Downloads`. Kjør:
+Last ned `ki-varslinger-2.0.1.zip` til `~/Downloads`. Kjør:
 
 ```bash
-mkdir -p "$HOME/Downloads/ki-varslinger-2.0.0"
-ditto -x -k "$HOME/Downloads/ki-varslinger-2.0.0.zip" "$HOME/Downloads/ki-varslinger-2.0.0"
-bash "$HOME/Downloads/ki-varslinger-2.0.0/ki-varslinger/scripts/publish-macos.sh" 2.0.0
+mkdir -p "$HOME/Downloads/ki-varslinger-2.0.1"
+ditto -x -k "$HOME/Downloads/ki-varslinger-2.0.1.zip" "$HOME/Downloads/ki-varslinger-2.0.1"
+bash "$HOME/Downloads/ki-varslinger-2.0.1/ki-varslinger/scripts/publish-macos.sh" 2.0.1
 ```
 
 Skriptet bruker `~/Documents/HomeAssistant/ki-varslinger`, eksisterende GitHub CLI-innlogging og grenen `main`. Det oppdaterer repoets beskrivelse, topics og Issues, pusher commit/tag og publiserer en release med [RELEASE.md](RELEASE.md) og ZIP-en. Trenger du avhengighetene: `brew install git gh python rsync`.
 
 Lokale endringer og eksisterende versjonstagger stopper skriptet. Det overskriver ikke tagger og bruker ikke force-push. Nye versjoner må få nytt nummer i manifest, enhetens `sw_version`, releasenotat og pakkenavn. Bruk samme versjon som argument.
 
-Hvis push feiler etter at lokal commit/tag er opprettet, ligger arbeidet igjen lokalt. Løs den rapporterte feilen og kjør fra repoet, for eksempel for 2.0.0:
+Hvis push feiler etter at lokal commit/tag er opprettet, ligger arbeidet igjen lokalt. Løs den rapporterte feilen og kjør fra repoet, for eksempel for 2.0.1:
 
 ```bash
 cd "$HOME/Documents/HomeAssistant/ki-varslinger"
-git push --atomic origin main refs/tags/v2.0.0
+git push --atomic origin main refs/tags/v2.0.1
 ```
 
 Hvis kun release-opprettelsen feiler etter vellykket push, kan den fullføres uten ny commit/tag:
 
 ```bash
 cd "$HOME/Documents/HomeAssistant/ki-varslinger"
-gh release create v2.0.0 "$HOME/Downloads/ki-varslinger-2.0.0.zip" \
+gh release create v2.0.1 "$HOME/Downloads/ki-varslinger-2.0.1.zip" \
   --repo SebastianKristo/ki-varslinger --verify-tag \
-  --title "Varslinger og sikkerhet 2.0.0" --notes-file RELEASE.md
+  --title "KI Varslinger og sikkerhet 2.0.1" --notes-file RELEASE.md
 ```
 
 Sjekk om releasen allerede finnes før du kjører gjenopprettingskommandoen. Ved manglende Git-identitet må `git config user.name` og `git config user.email` settes til dine egne verdier.
@@ -89,3 +89,15 @@ GitHub Actions kjører HACS-validering, Home Assistants hassfest, funksjonsteste
 ## Lisens
 
 [Apache License 2.0](LICENSE), beholdt fra dette repoet.
+
+## Feilsøking av autolås (2.0.1)
+
+1. Slå på funksjonsbryteren **Autolås**. Nye sikkerhetsoppsett starter avslått.
+2. Åpne **Sikkerhetsstatus** på autolås-enheten. `dorverdi` må samsvare med `forventet_apen` når døren er åpen og `forventet_lukket` når den er lukket. Rett verdiene under integrasjonens innstillinger hvis status viser **Kontroller dørverdier**.
+3. Kontroller `ventetid_kilde`: en valgt `input_number` overstyrer tallfeltet. Helperen skal angi sekunder (5–3600).
+4. Åpne og lukk døren. Status skal bli **Venter på autolås** og `planlagt_lasing` viser tidspunktet. Attributtet er et tidspunkt, ikke et sekundvis oppdatert nedtellingsfelt.
+5. Døren må fortsatt være lukket og låsen rapportere `unlocked` når tiden utløper. Åpning eller ukjent dørtilstand avbryter. **Døren er låst** vises først når låsen rapporterer `locked`.
+
+Lukket dør ved oppstart eller aktivering starter ikke nedtelling; det kreves en registrert åpen → lukket-overgang. En tidligere nedtelling gjenopptas ikke etter omstart.
+
+For en [binær dørsensor](https://www.home-assistant.io/integrations/binary_sensor/) er råverdiene `on` (åpen) og `off` (lukket). `sensor.inngangsdor` er en vanlig sensor, så kontroller dens faktiske råverdier i Utviklerverktøy → Tilstander; ikke anta at de er `open`/`closed` eller `on`/`off`.

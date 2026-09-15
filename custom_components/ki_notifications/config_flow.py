@@ -123,7 +123,7 @@ def errors(hass, kind, data, entry_id=None):
         return {'base': 'missing_ruter'}
     if kind == 'weather_ai' and not data.get('weekdays'):
         return {'base': 'no_weekdays'}
-    if kind == 'autolock' and (data['door_open'] == data['door_closed'] or data['door_closed'] in ['unknown','unavailable','']):
+    if kind == 'autolock' and (data['door_open'] == data['door_closed'] or any(v in ['unknown','unavailable',''] for v in [data['door_open'],data['door_closed']])):
         return {'base': 'invalid_door_states'}
     if kind == 'alarm_sync':
         source = hass.states.get(data['homey_select'])
@@ -176,4 +176,7 @@ class Options(config_entries.OptionsFlow):
         if user_input is not None and not err:
             return self.async_create_entry(title='', data=user_input)
         saved = dict(self.config_entry.options or self.config_entry.data)
+        runtime = self.hass.data.get(DOMAIN, {}).get(self.config_entry.entry_id)
+        if kind == 'autolock' and runtime and not saved.get('delay_helper'):
+            saved['autolock_delay'] = runtime.autolock_seconds
         return self.async_show_form(step_id='init', data_schema=schema(self.hass, kind, user_input if user_input is not None else saved), errors=err)

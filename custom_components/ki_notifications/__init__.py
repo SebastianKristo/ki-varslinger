@@ -83,14 +83,20 @@ class Runtime(ExtraNotifications, Security):
         self.enabled.update({k:bool(v) for k,v in saved.get('enabled',{}).items() if k in self.enabled})
         self.master_enabled = bool(saved.get('master_enabled', True))
         self.last_weather_date = saved.get('last_weather_date')
-        self.autolock_seconds = saved.get('autolock_seconds',self.autolock_seconds)
+        # Preserve number changes until the configured delay is explicitly changed.
+        configured_delay = float(self.cfg.get('autolock_delay', 30))
+        previous_delay = saved.get('autolock_config_delay', configured_delay)
+        if previous_delay == configured_delay:
+            self.autolock_seconds = saved.get('autolock_seconds', configured_delay)
+        else:
+            self.autolock_seconds = configured_delay
         self.last_unlock_person = saved.get('last_unlock_person')
         self.last_unlock_at = saved.get('last_unlock_at')
-        if not saved:
+        if not saved or 'autolock_config_delay' not in saved or previous_delay != configured_delay:
             await self.save_settings()
 
     async def save_settings(self):
-        await self.store.async_save({'enabled': self.enabled, 'master_enabled': self.master_enabled, 'last_weather_date': self.last_weather_date, 'autolock_seconds':self.autolock_seconds, 'last_unlock_person':self.last_unlock_person, 'last_unlock_at':self.last_unlock_at})
+        await self.store.async_save({'enabled': self.enabled, 'master_enabled': self.master_enabled, 'last_weather_date': self.last_weather_date, 'autolock_seconds':self.autolock_seconds, 'autolock_config_delay':float(self.cfg.get('autolock_delay',30)), 'last_unlock_person':self.last_unlock_person, 'last_unlock_at':self.last_unlock_at})
 
     @callback
     def update(self):

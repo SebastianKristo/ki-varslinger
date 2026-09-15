@@ -1,6 +1,7 @@
 """Door and alarm controls. Secrets stay in config entry data, never diagnostics."""
 import asyncio
 import math
+from datetime import timedelta
 from aiohttp import web
 from homeassistant.components import webhook
 from homeassistant.core import callback
@@ -15,6 +16,7 @@ class Security:
         self.door_closed_at = None
         self.auto_cancel = None
         self.auto_generation = 0
+        self.autolock_deadline = None
         self.sync_expected = {}
         self.registered_hooks = []
         self.face_future = None
@@ -49,6 +51,7 @@ class Security:
 
     def cancel_autolock(self):
         self.auto_generation += 1
+        self.autolock_deadline = None
         if self.auto_cancel:
             self.auto_cancel()
             self.auto_cancel = None
@@ -75,6 +78,43 @@ class Security:
         await self.save_settings()
         self.update()
 
+    def autolock_status(self):
+        if not self.enabled['enabled']:
+            return 'Av'
+        door = self.hass.states.get(self.cfg['door_entity'])
+        lock = self.hass.states.get(self.cfg['entity'])
+        if not door or door.state in INVALID:
+            return 'Dørsensor utilgjengelig'
+        if door.state not in {self.cfg['door_open'], self.cfg['door_closed']}:
+            return 'Kontroller dørverdier'
+        if door.state == self.cfg['door_open']:
+            return 'Døren er åpen'
+        if lock and lock.state == 'locked':
+            return 'Døren er låst'
+        if not lock or lock.state in INVALID:
+            return 'Lås utilgjengelig'
+        if self.auto_cancel:
+            return 'Venter på autolås'
+        if lock.state == 'locking':
+            return 'Låser'
+        return 'Venter på åpning og lukking'
+
+    def autolock_attributes(self):
+        door = self.hass.states.get(self.cfg['door_entity'])
+        lock = self.hass.states.get(self.cfg['entity'])
+        helper = self.hass.states.get(self.cfg.get('delay_helper', 'input_number.ki_missing'))
+        return {
+            'dorsensor': self.cfg['door_entity'],
+            'dorverdi': door.state if door else None,
+            'forventet_apen': self.cfg['door_open'],
+            'forventet_lukket': self.cfg['door_closed'],
+            'las': self.cfg['entity'],
+            'lasverdi': lock.state if lock else None,
+            'ventetid_sekunder': helper.state if self.cfg.get('delay_helper') and helper else self.autolock_seconds if not self.cfg.get('delay_helper') else None,
+            'ventetid_kilde': self.cfg.get('delay_helper') or 'Ventetid før autolås',
+            'planlagt_lasing': self.autolock_deadline,
+        }
+
     def schedule_autolock(self):
         self.cancel_autolock()
         if self.closed or not self.enabled['enabled'] or self.door_closed_at is None:
@@ -97,14 +137,19 @@ class Security:
         generation = self.auto_generation
         async def due(now):
             await self.autolock_due(generation)
+        self.autolock_deadline = (dt_util.utcnow() + timedelta(seconds=remaining)).isoformat()
+        self.security_error = ''
         self.auto_cancel = async_call_later(self.hass,remaining,due)
+        self.update()
 
     async def autolock_due(self, generation):
         async with self.lock:
             if self.closed or not self.enabled['enabled'] or generation != self.auto_generation:
                 return
             self.auto_cancel = None
+            self.autolock_deadline = None
             self.door_closed_at = None
+            self.update()
             door = self.hass.states.get(self.cfg['door_entity'])
             lock = self.hass.states.get(self.cfg['entity'])
             if not door or door.state != self.cfg['door_closed']:
@@ -139,6 +184,7 @@ class Security:
                     self.schedule_autolock()
                 return
             if entity_id != self.cfg['door_entity']:
+                self.update()
                 return
             if not new or new.state != self.cfg['door_closed']:
                 self.cancel_autolock()
@@ -146,6 +192,7 @@ class Security:
             elif old and old.state == self.cfg['door_open'] and self.enabled['enabled']:
                 self.door_closed_at = self.hass.loop.time()
                 self.schedule_autolock()
+            self.update()
             return
         if self.kind != 'alarm_sync' or not self.enabled['enabled']:
             return
