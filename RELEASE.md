@@ -1,11 +1,16 @@
-# KI Varslinger og sikkerhet 2.0.1
+# KI Varslinger og sikkerhet 2.1.0
 
-- Navnet er nå **KI Varslinger og sikkerhet** i Home Assistant og HACS. Domenet og eksisterende entitetsidentiteter beholdes.
-- Rettet at en tidligere lagret ventetid kunne overstyre ny ventetid valgt i innstillingene. Endringer via tallentiteten huskes fortsatt etter omstart.
-- Sikkerhetsstatus viser hvorfor autolåsen venter, inkludert feil dørverdier og utilgjengelig sensor/lås. Attributtene viser rå dørverdi, forventede verdier, låstilstand, ventetidskilde og planlagt låsetid.
-- Status oppdateres når døren/låsen endres og nedtelling starter eller avsluttes.
-- Tydeligere felthjelp for rå dørverdier og input_number som overstyrer ventetiden.
+## Nytt: Dørlys – blink ved åpning
 
-Etter oppdatering: start Home Assistant på nytt. Kontroller at Autolås-bryteren er på og at verdiene i oppsettet samsvarer med råverdiene for dørsensoren. Åpne og lukk døren for å starte en ny nedtelling. Oppstart eller aktivering mens døren allerede er lukket starter ikke nedtelling.
+Blinker `light.pultskjermer` etter bekreftet opplåsing og påfølgende åpning av døren. Standard er tre blink med 0,5 sekunder per av/på-trinn, og åpning innen 60 sekunder etter opplåsing. Alle verdiene kan endres i oppsettet.
 
-Den konkrete årsaken hos brukeren er ikke bekreftet uten faktiske sensorverdier. Se TESTING.md for lokal validering. Ingen fysisk lås er betjent i testene.
+- Egen av/på-bryter; starter avslått.
+- Krever begge hendelser i riktig rekkefølge. Åpning alene, omstart, gjenopprettet kontakt eller utløpt tidsgrense gir ingen blinking.
+- Én blinkesekvens per opplåsing; ingen overlappende blink fra integrasjonens oppsett på samme lys.
+- Gjenoppretter av/på, rapportert lysstyrke og aktiv farge etterpå. Lysgrupper med medlemsliste gjenopprettes per medlem.
+- Forsøker gjenoppretting også ved tjenestefeil, deaktivering, reload og kontrollert avslutning.
+- Egne statusfelt for lys og siste fullførte blink.
+
+Etter HACS-oppdatering og omstart: legg til **Dørlys – blink ved åpning** i **KI Varslinger og sikkerhet**. Velg lås, `sensor.inngangsdor` og `light.pultskjermer`. Angi dørsensorens faktiske råverdier for åpen og lukket, og slå på funksjonsbryteren.
+
+Autolåsrettingene fra 2.0.1 og øvrige funksjoner følger med. Ingen fysisk lås eller lampe er betjent under utvikling; se TESTING.md.

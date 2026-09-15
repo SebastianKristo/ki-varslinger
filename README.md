@@ -9,6 +9,7 @@ Integrasjon for varslinger og sikkerhet i Home Assistant med oppsett i brukergre
 
 | Oppsett | Funksjoner |
 | --- | --- |
+| Dørlys | Blinker pultskjermene etter opplåsing og åpning, med gjenoppretting. |
 | Autolås | Låser etter bekreftet lukking. Tallfelt for sekunder, eller eksisterende input_number. |
 | Heimdall ↔ Alarmo | Toveis armering/deaktivering og kameraenes privacy mode. |
 | Ansiktsgjenkjenning | Tre lokale webhooks, bekreftet opplåsing og sensor for person/tid. |
@@ -101,3 +102,23 @@ GitHub Actions kjører HACS-validering, Home Assistants hassfest, funksjonsteste
 Lukket dør ved oppstart eller aktivering starter ikke nedtelling; det kreves en registrert åpen → lukket-overgang. En tidligere nedtelling gjenopptas ikke etter omstart.
 
 For en [binær dørsensor](https://www.home-assistant.io/integrations/binary_sensor/) er råverdiene `on` (åpen) og `off` (lukket). `sensor.inngangsdor` er en vanlig sensor, så kontroller dens faktiske råverdier i Utviklerverktøy → Tilstander; ikke anta at de er `open`/`closed` eller `on`/`off`.
+
+## Dørlys – blink ved åpning (2.1.0)
+
+Legg til et nytt oppsett i **KI Varslinger og sikkerhet**, og velg **Dørlys – blink ved åpning**.
+
+| Innstilling | Forslag |
+| --- | --- |
+| Entitet som skal overvåkes | `lock.dorlas_blatann` – velg låsen som faktisk rapporterer opplåsing |
+| Dørsensor | `sensor.inngangsdor` |
+| Åpen/lukket sensorverdi | Nøyaktige råverdier fra Utviklerverktøy → Tilstander |
+| Lys som skal blinke | `light.pultskjermer` |
+| Antall blink | 3 |
+| Varighet per av/på-trinn | 0,5 sekunder |
+| Maks tid fra opplåsing til åpning | 60 sekunder |
+
+Slå på den nye funksjonsbryteren. Lås opp mens døren er lukket, og åpne den innen tidsgrensen. Integrasjonen må ha observert en reell opplåsing fra låst til ulåst (også via `unlocking`). En dør som allerede står ulåst gir ingen blinking ved åpning. Funksjonen skiller ikke mellom hvem som åpner eller hvilken side de står på.
+
+Lyset blinker tre ganger og går tilbake til rapportert tidligere av/på, lysstyrke og farge. Hvis lyset er en HA-gruppe med medlemsliste, gjenopprettes medlemmenes individuelle tilstander. Ingen blink køes mens en sekvens kjører. Avslått bryter stopper sekvensen og forsøker å gjenopprette lyset.
+
+Status viser **Av**, **Klar**, **Blinker** eller **Sikkerhetsfeil**. Attributtet `siste_blink` viser siste fullførte sekvens i denne kjøretiden. Gjenoppretting krever at lyset fortsatt er tilgjengelig og HA kjører; strømbrudd kan avbryte prosessen. Andre automasjoner eller manuelle lysendringer under blinkingen kan bli overskrevet når den lagrede tilstanden gjenopprettes.

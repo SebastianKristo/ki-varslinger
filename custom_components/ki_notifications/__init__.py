@@ -11,6 +11,7 @@ from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 from homeassistant.components.zone import in_zone
 from .security import Security
+from .door_blink import DoorBlink
 from .extra_notifications import ExtraNotifications
 from .const import DOMAIN, PEOPLE, INVALID, flags, SECURITY_KINDS
 from .logic import alarm_event, presence_event, vacuum_actions, minutes, choose_departure
@@ -41,13 +42,14 @@ async def async_unload_entry(hass, entry):
     if await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         runtime = hass.data[DOMAIN].pop(entry.entry_id)
         runtime.close()
+        await runtime.blink_finish()
         return True
     return False
 
 async def async_remove_entry(hass, entry):
     await Store(hass, 1, f'{DOMAIN}.{entry.entry_id}').async_remove()
 
-class Runtime(ExtraNotifications, Security):
+class Runtime(ExtraNotifications, Security, DoorBlink):
     def __init__(self, hass, entry):
         self.hass, self.entry = hass, entry
         self.cfg = dict(entry.options or entry.data)
@@ -71,6 +73,7 @@ class Runtime(ExtraNotifications, Security):
         self.jam_cancel = None
         self.jam_generation = 0
         self.security_init()
+        self.blink_init()
 
     async def load(self):
         saved = await self.store.async_load() or {}
@@ -110,6 +113,8 @@ class Runtime(ExtraNotifications, Security):
             self.enabled[key] = value
         if self.kind in SECURITY_KINDS:
             self.security_toggled()
+            if self.kind == 'door_blink' and not value:
+                await self.blink_finish()
         await self.save_settings()
         if self.kind == 'lock_jammed':
             self.arm_jam_timer()
@@ -136,6 +141,9 @@ class Runtime(ExtraNotifications, Security):
             entities.append(c['door_entity'])
             if c.get('delay_helper'):
                 entities.append(c['delay_helper'])
+        if self.kind == 'door_blink':
+            entities.append(c['door_entity'])
+            self.unsubs.append(self.hass.bus.async_listen_once('homeassistant_stop', self.blink_finish))
         if self.kind == 'alarm_sync':
             entities.append(c['homey_select'])
         if self.kind == 'alarm' and c.get('triggered_sensor'):
@@ -156,6 +164,7 @@ class Runtime(ExtraNotifications, Security):
         self.closed = True
         self.extra_close()
         self.security_close()
+        self.blink_close()
         self.token = secrets.token_hex(16)
         for unsub in self.unsubs:
             unsub()

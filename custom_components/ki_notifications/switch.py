@@ -14,6 +14,8 @@ class KISwitch(KIEntity, SwitchEntity):
     def __init__(self,r,key,name):
         super().__init__(r,'switch_'+key,name,'mdi:bell-outline')
         self.key=key
+        if r.kind == 'door_blink':
+            self._attr_icon = 'mdi:lightbulb-alert-outline'
         if key == 'master':
             self._attr_icon = 'mdi:bell-cog-outline'
     @property

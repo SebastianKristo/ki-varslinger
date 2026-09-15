@@ -1,10 +1,10 @@
-# Testresultat – KI Varslinger og sikkerhet 2.0.1
+# Testresultat – KI Varslinger og sikkerhet 2.1.0
 
 Testet 15. september 2026 med Python 3.13.15 og Home Assistant Core 2025.12.5 i et isolert lokalt miljø.
 
 ## Funksjonstester
 
-53 tester bestått. Testene bruker Home Assistants egne State-, Event-, Store- og tjenesteregisterklasser. Notify- og vacuum-handlingene er simulerte og kontakter ingen telefon eller robot.
+66 tester bestått. Testene bruker Home Assistants egne State-, Event-, Store- og tjenesteregisterklasser. Notify- og vacuum-handlingene er simulerte og kontakter ingen telefon eller robot.
 
 Dekker: skjemaer, opprettelse av konfigurasjonsoppføring, validering av mottakere, fjerning av valgfrie kilder, opprettelse av plattformentiteter, faktiske tilstandslyttere og avregistrering, familieordlyd/lyd, uavhengige brytere, lagring, sonefilter, alarmforløp, kritisk alarm kontra test, Homey-alarm, uavhengig sending ved mottakerfeil, samme støvsugervarsel med Pause → Start, umiddelbar Start før robotens tilstand har oppdatert seg, avvisning av gamle knapper, sikre støvsugertester og gyldige transportavganger.
 
@@ -60,3 +60,9 @@ HTTP-testene bruker simulerte lokale/eksterne forespørsler, ikke det virkelige 
 ## Autolåsretting 2.0.1
 
 Nye regresjonstester kontrollerer at endret ventetid i innstillinger overstyrer tidligere lagring, at tallendringer fortsatt huskes, at feil rå dørverdier forklares uten låsekommando, at eksplisitt on/off-oppsett låser etter nedtelling, og at rene attributtoppdateringer ikke starter nedtellingen på nytt. Statusattributter inneholder ingen låsekode. Full funksjonstest og innlastingstest besto 15. september 2026.
+
+## Dørlys 2.1.0
+
+13 nye tester dekker opplåsing → åpning, tre blink, gjenoppretting av tidligere av/på og RGB, ulike medlemmer i lysgruppe, ingen blinking ved avslått funksjon eller åpning alene, utløpt tidsgrense, ny låsing, mellomtilstanden unlocking, ukjent lås/dør, deaktivering og avslutning under blinking, tjenestefeil og overlappende oppsett. En test bruker HAs faktiske tilstandslyttere og kontrollerer transition=0 på lys som støtter dette.
+
+Innlastingstesten oppretter og avlaster også Dørlys med to entiteter (bryter og status). Full suite: 66 tester bestått, og innlastingstest bestått, 15. september 2026. Lystjenestene er simulerte. Fysisk blinking på light.pultskjermer er ikke testet.

@@ -1,5 +1,5 @@
 DOMAIN = 'ki_notifications'
-KINDS = {'family': 'Familie – hjemme/borte', 'vacuum': 'Støvsuger', 'alarm': 'Alarm', 'state': 'Egendefinert tilstandsvarsel', 'ruter': 'Ruter – fra skolen', 'weather_ai': 'Værmelding – AI', 'ha_start': 'Home Assistant startet', 'lock_jammed': 'Dørlås fastkjørt', 'autolock': 'Autolås', 'alarm_sync': 'Heimdall ↔ Alarmo', 'face_unlock': 'Ansiktsgjenkjenning – dørlås'}
+KINDS = {'family': 'Familie – hjemme/borte', 'vacuum': 'Støvsuger', 'alarm': 'Alarm', 'state': 'Egendefinert tilstandsvarsel', 'ruter': 'Ruter – fra skolen', 'weather_ai': 'Værmelding – AI', 'ha_start': 'Home Assistant startet', 'lock_jammed': 'Dørlås fastkjørt', 'autolock': 'Autolås', 'alarm_sync': 'Heimdall ↔ Alarmo', 'face_unlock': 'Ansiktsgjenkjenning – dørlås', 'door_blink': 'Dørlys – blink ved åpning'}
 PEOPLE = {'rune': 'Rune', 'cybele': 'Cybele', 'sebastian': 'Sebastian'}
 INVALID = {'unknown', 'unavailable', ''}
 
@@ -12,4 +12,4 @@ def flags(kind):
         return {'enabled': KINDS[kind]}
     return {'enabled': 'Varsling'}
 
-SECURITY_KINDS = {'autolock', 'alarm_sync', 'face_unlock'}
+SECURITY_KINDS = {'autolock', 'alarm_sync', 'face_unlock', 'door_blink'}

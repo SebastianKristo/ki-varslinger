@@ -67,13 +67,19 @@
           "face_cooldown": "Minste tid mellom opplåsingsforsøk (sekunder)",
           "webhook_sebastian": "Lokal webhook-ID – Sebastian",
           "webhook_rune": "Lokal webhook-ID – Rune",
-          "webhook_cybele": "Lokal webhook-ID – Cybele"
+          "webhook_cybele": "Lokal webhook-ID – Cybele",
+          "blink_light": "Lys som skal blinke",
+          "blink_count": "Antall blink",
+          "blink_interval": "Varighet per av/på-trinn (sekunder)",
+          "unlock_window": "Maks tid fra opplåsing til åpning (sekunder)"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",
           "door_closed": "Bruk nøyaktig rå tilstand mens døren er lukket. Se også Sikkerhetsstatus for aktuell og forventet verdi.",
           "delay_helper": "Hvis valgt, bestemmer denne helperen ventetiden i sekunder og overstyrer ventetidsfeltet.",
-          "autolock_delay": "5–3600 sekunder fra åpen → lukket. Funksjonsbryteren Autolås må være på. En ny verdi her erstatter tidligere lagret ventetid."
+          "autolock_delay": "5–3600 sekunder fra åpen → lukket. Funksjonsbryteren Autolås må være på. En ny verdi her erstatter tidligere lagret ventetid.",
+          "blink_light": "Tidligere lysstyrke, farge og av/på-tilstand gjenopprettes etter blinkingen.",
+          "unlock_window": "Blinker én gang per opplåsing, når døren deretter åpnes innen denne tiden. Funksjonsbryteren må være på."
         }
       }
     },
@@ -151,13 +157,19 @@
           "face_cooldown": "Minste tid mellom opplåsingsforsøk (sekunder)",
           "webhook_sebastian": "Lokal webhook-ID – Sebastian",
           "webhook_rune": "Lokal webhook-ID – Rune",
-          "webhook_cybele": "Lokal webhook-ID – Cybele"
+          "webhook_cybele": "Lokal webhook-ID – Cybele",
+          "blink_light": "Lys som skal blinke",
+          "blink_count": "Antall blink",
+          "blink_interval": "Varighet per av/på-trinn (sekunder)",
+          "unlock_window": "Maks tid fra opplåsing til åpning (sekunder)"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",
           "door_closed": "Bruk nøyaktig rå tilstand mens døren er lukket. Se også Sikkerhetsstatus for aktuell og forventet verdi.",
           "delay_helper": "Hvis valgt, bestemmer denne helperen ventetiden i sekunder og overstyrer ventetidsfeltet.",
-          "autolock_delay": "5–3600 sekunder fra åpen → lukket. Funksjonsbryteren Autolås må være på. En ny verdi her erstatter tidligere lagret ventetid."
+          "autolock_delay": "5–3600 sekunder fra åpen → lukket. Funksjonsbryteren Autolås må være på. En ny verdi her erstatter tidligere lagret ventetid.",
+          "blink_light": "Tidligere lysstyrke, farge og av/på-tilstand gjenopprettes etter blinkingen.",
+          "unlock_window": "Blinker én gang per opplåsing, når døren deretter åpnes innen denne tiden. Funksjonsbryteren må være på."
         }
       }
     },

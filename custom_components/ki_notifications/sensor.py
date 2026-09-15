@@ -18,6 +18,8 @@ class KIStatus(KIEntity, SensorEntity):
     def native_value(self):
         if self.runtime.security_error:
             return 'Sikkerhetsfeil'
+        if self.runtime.kind == 'door_blink' and self.runtime.enabled['enabled']:
+            return 'Blinker' if self.runtime.blink_task else 'Klar'
         if self.runtime.kind == 'autolock':
             return self.runtime.autolock_status()
         if self.runtime.kind in SECURITY_KINDS:
@@ -26,7 +28,7 @@ class KIStatus(KIEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         r=self.runtime
-        return {'siste_melding':r.last_message,'siste_sendt':r.last_sent,'siste_feil':r.last_error,'datakildefeil':r.last_source_error,'type':r.kind, 'hovedbryter':r.master_enabled, 'sikkerhetsfeil':r.security_error, **(r.autolock_attributes() if r.kind == 'autolock' else {})}
+        return {'siste_melding':r.last_message,'siste_sendt':r.last_sent,'siste_feil':r.last_error,'datakildefeil':r.last_source_error,'type':r.kind, 'hovedbryter':r.master_enabled, 'sikkerhetsfeil':r.security_error, **(r.autolock_attributes() if r.kind == 'autolock' else {}), **({'lys':r.cfg['blink_light'], 'siste_blink':r.blink_last_at} if r.kind == 'door_blink' else {})}
 
 class LastUnlock(KIEntity, SensorEntity):
     def __init__(self,r):

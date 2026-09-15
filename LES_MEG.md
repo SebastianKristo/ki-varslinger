@@ -1,4 +1,4 @@
-# KI Varslinger og sikkerhet 2.0.1
+# KI Varslinger og sikkerhet 2.1.0
 
 En egendefinert Home Assistant-integrasjon for familie, støvsuger, alarm, egne tilstandsendringer og Ruter-varsler. Oppsett og endringer gjøres i brukergrensesnittet. Ingen YAML-pakke eller KI-testskript kreves.
 
@@ -29,7 +29,7 @@ Familieoppsettet leser de gamle seks `input_boolean.posisjonsvarsel_*`-bryterne 
 
 Lyder velges i det nye oppsettet; de gamle `input_select`-lydvelgerne styrer ikke integrasjonen. Start gjerne med `default` for første test.
 
-## Sikkerhetsfunksjoner – nytt i 2.0.1
+## Sikkerhetsfunksjoner – nytt i 2.1.0
 
 Navnet er endret til **KI Varslinger og sikkerhet** i HA/HACS. Domenet `ki_notifications`, repoet `SebastianKristo/ki-varslinger` og gamle varslingsoppsett beholdes. De tre sikkerhetsfunksjonene legges til som egne oppsett og starter **avslått**. De har ingen testknapp som kan betjene en fysisk lås eller alarm.
 
@@ -238,3 +238,23 @@ Ved avinstallering: fjern integrasjonsoppføringene, fjern mappen `custom_compon
 Kildekode, UI-skjemaer og hendelseshåndtering er testet lokalt med Home Assistant 2025.12.5. Testene bruker HAs ekte tilstandsmaskin og tjenesteregister med simulerte notify-/vacuum-handlinger. De sender ikke til telefoner og kjører ikke en fysisk alarm. Se `TESTING.md` for resultat og kjørekommando.
 
 Installasjon i din HA-instans, nettleservisning, fysisk Roborock og iPhone/Pixel-lyd er ikke testet her. Dette er første versjon. Lysstyringen på soverommet, klimastyringen og nattmodus-kortet er separate funksjoner. Denne integrasjonen samler varsling og de beskrevne sikkerhetsfunksjonene.
+
+## Dørlys – blink ved åpning (2.1.0)
+
+Legg til et nytt oppsett i **KI Varslinger og sikkerhet**, og velg **Dørlys – blink ved åpning**.
+
+| Innstilling | Forslag |
+| --- | --- |
+| Entitet som skal overvåkes | `lock.dorlas_blatann` – velg låsen som faktisk rapporterer opplåsing |
+| Dørsensor | `sensor.inngangsdor` |
+| Åpen/lukket sensorverdi | Nøyaktige råverdier fra Utviklerverktøy → Tilstander |
+| Lys som skal blinke | `light.pultskjermer` |
+| Antall blink | 3 |
+| Varighet per av/på-trinn | 0,5 sekunder |
+| Maks tid fra opplåsing til åpning | 60 sekunder |
+
+Slå på den nye funksjonsbryteren. Lås opp mens døren er lukket, og åpne den innen tidsgrensen. Integrasjonen må ha observert en reell opplåsing fra låst til ulåst (også via `unlocking`). En dør som allerede står ulåst gir ingen blinking ved åpning. Funksjonen skiller ikke mellom hvem som åpner eller hvilken side de står på.
+
+Lyset blinker tre ganger og går tilbake til rapportert tidligere av/på, lysstyrke og farge. Hvis lyset er en HA-gruppe med medlemsliste, gjenopprettes medlemmenes individuelle tilstander. Ingen blink køes mens en sekvens kjører. Avslått bryter stopper sekvensen og forsøker å gjenopprette lyset.
+
+Status viser **Av**, **Klar**, **Blinker** eller **Sikkerhetsfeil**. Attributtet `siste_blink` viser siste fullførte sekvens i denne kjøretiden. Gjenoppretting krever at lyset fortsatt er tilgjengelig og HA kjører; strømbrudd kan avbryte prosessen. Andre automasjoner eller manuelle lysendringer under blinkingen kan bli overskrevet når den lagrede tilstanden gjenopprettes.

@@ -60,6 +60,17 @@ def schema(hass, kind, saved):
         add('autolock_delay', selector.NumberSelector(selector.NumberSelectorConfig(min=5,max=3600,mode='box',unit_of_measurement='s')), 30)
         add('delay_helper', entity(['input_number']), required=False)
         add('security_code', selector.TextSelector(selector.TextSelectorConfig(type='password')), required=False)
+    elif kind == 'door_blink':
+        known = 'lock.dorlas_blatann'
+        add('entity', entity(['lock']), known if hass.states.get(known) else None)
+        known = 'sensor.inngangsdor'
+        add('door_entity', entity(['sensor','binary_sensor']), known if hass.states.get(known) else None)
+        add('door_open', text, 'open')
+        add('door_closed', text, 'closed')
+        add('blink_light', entity(['light']), 'light.pultskjermer')
+        add('blink_count', selector.NumberSelector(selector.NumberSelectorConfig(min=1,max=5,step=1,mode='box')), 3)
+        add('blink_interval', selector.NumberSelector(selector.NumberSelectorConfig(min=0.3,max=2,step=0.1,mode='box',unit_of_measurement='s')), 0.5)
+        add('unlock_window', selector.NumberSelector(selector.NumberSelectorConfig(min=5,max=300,step=1,mode='box',unit_of_measurement='s')), 60)
     elif kind == 'alarm_sync':
         known = 'alarm_control_panel.alarm'
         add('entity', entity(['alarm_control_panel']), known if hass.states.get(known) else None)
@@ -123,7 +134,7 @@ def errors(hass, kind, data, entry_id=None):
         return {'base': 'missing_ruter'}
     if kind == 'weather_ai' and not data.get('weekdays'):
         return {'base': 'no_weekdays'}
-    if kind == 'autolock' and (data['door_open'] == data['door_closed'] or any(v in ['unknown','unavailable',''] for v in [data['door_open'],data['door_closed']])):
+    if kind in {'autolock', 'door_blink'} and (data['door_open'] == data['door_closed'] or any(v in ['unknown','unavailable',''] for v in [data['door_open'],data['door_closed']])):
         return {'base': 'invalid_door_states'}
     if kind == 'alarm_sync':
         source = hass.states.get(data['homey_select'])

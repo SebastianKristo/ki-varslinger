@@ -178,6 +178,9 @@ class Security:
             return False
 
     async def security_changed(self, old, new, entity_id):
+        if self.kind == 'door_blink':
+            await self.blink_changed(old, new, entity_id)
+            return
         if self.kind == 'autolock':
             if entity_id == self.cfg.get('delay_helper'):
                 if self.door_closed_at is not None:
