@@ -10,7 +10,7 @@ class KIEntity(Entity):
         self._attr_unique_id = f'{runtime.entry.entry_id}_{key}'
         self._attr_name = name
         self._attr_icon = icon
-        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN,runtime.entry.entry_id)}, name=runtime.cfg['name'], manufacturer='KI', model='KI Varslinger og sikkerhet', sw_version='2.1.0')
+        self._attr_device_info = DeviceInfo(identifiers={(DOMAIN,runtime.entry.entry_id)}, name=runtime.cfg['name'], manufacturer='KI', model='KI Varslinger og sikkerhet', sw_version='2.2.0')
 
     async def async_added_to_hass(self):
         await super().async_added_to_hass()

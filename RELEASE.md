@@ -1,16 +1,12 @@
-# KI Varslinger og sikkerhet 2.1.0
+# KI Varslinger og sikkerhet 2.2.0
 
-## Nytt: Dørlys – blink ved åpning
+- **Test blinking:** umiddelbar blinketest, også når automatisk blinking er av. Gjenoppretter tidligere lysinnstillinger.
+- **Kontroller autolås:** kontrollerer oppsett og råverdier uten låsekommando.
+- **Test autolås – lås etter ventetid:** starter nedtelling og kan faktisk låse. Krever aktivert autolås, gjenkjent lukket dør og ulåst lås. Avbrytes ved åpning, ukjent dørtilstand eller avslått funksjon.
+- **Dørverdi gjenkjent**, **Døren er lukket** og **Låsen er låst** viser tolkningen av kildene. Ukjent tilstand blir ikke tolket som åpen eller ulåst.
+- **Testresultat** viser siste testbeskjed og tidspunkt. Sensorene oppdateres også når automatikk er av.
+- Rettet rekkefølge ved oppstart av blinkejobben slik at en rask test ikke overskriver sluttresultatet med «startet».
 
-Blinker `light.pultskjermer` etter bekreftet opplåsing og påfølgende åpning av døren. Standard er tre blink med 0,5 sekunder per av/på-trinn, og åpning innen 60 sekunder etter opplåsing. Alle verdiene kan endres i oppsettet.
+Knappene og sensorene legges automatisk til eksisterende oppsett etter HACS-oppdatering og omstart. Ingen ny konfigurasjon kreves. Kontroller fysisk at dørvisningen følger åpning/lukking; gjenkjent verdi betyr samsvar med konfigurasjonen.
 
-- Egen av/på-bryter; starter avslått.
-- Krever begge hendelser i riktig rekkefølge. Åpning alene, omstart, gjenopprettet kontakt eller utløpt tidsgrense gir ingen blinking.
-- Én blinkesekvens per opplåsing; ingen overlappende blink fra integrasjonens oppsett på samme lys.
-- Gjenoppretter av/på, rapportert lysstyrke og aktiv farge etterpå. Lysgrupper med medlemsliste gjenopprettes per medlem.
-- Forsøker gjenoppretting også ved tjenestefeil, deaktivering, reload og kontrollert avslutning.
-- Egne statusfelt for lys og siste fullførte blink.
-
-Etter HACS-oppdatering og omstart: legg til **Dørlys – blink ved åpning** i **KI Varslinger og sikkerhet**. Velg lås, `sensor.inngangsdor` og `light.pultskjermer`. Angi dørsensorens faktiske råverdier for åpen og lukket, og slå på funksjonsbryteren.
-
-Autolåsrettingene fra 2.0.1 og øvrige funksjoner følger med. Ingen fysisk lås eller lampe er betjent under utvikling; se TESTING.md.
+74 tester og innlastingstest bestått i et isolert HA-miljø med simulerte tjenester. Fysisk lampe og lås er ikke testet. Se TESTING.md.

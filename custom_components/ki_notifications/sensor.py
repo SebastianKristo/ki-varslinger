@@ -6,6 +6,8 @@ from .entity import KIEntity
 async def async_setup_entry(hass, entry, async_add_entities):
     r=hass.data[DOMAIN][entry.entry_id]
     entities=[KIStatus(r)]
+    if r.kind in {'autolock', 'door_blink'}:
+        entities.append(TestResult(r))
     if r.kind == 'face_unlock':
         entities.append(LastUnlock(r))
     async_add_entities(entities)
@@ -39,3 +41,14 @@ class LastUnlock(KIEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         return {'bekreftet_tid':self.runtime.last_unlock_at, 'kilde':'Lokal webhook; bekreftet ulåst tilstand'}
+
+class TestResult(KIEntity, SensorEntity):
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    def __init__(self, r):
+        super().__init__(r, 'test_result', 'Testresultat', 'mdi:clipboard-check-outline')
+    @property
+    def native_value(self):
+        return self.runtime.last_test_result
+    @property
+    def extra_state_attributes(self):
+        return {'testet_tid': self.runtime.last_test_at}

@@ -33,8 +33,8 @@ async def main():
   assert flow['type']=='form'
   print('OPTIONS FORM OK')
   for kind, settings, expected_count in [
-   ('door_blink',{'entity':'lock.front','door_entity':'sensor.door','door_open':'open','door_closed':'closed','blink_light':'light.pultskjermer','blink_count':3,'blink_interval':0.5,'unlock_window':60},2),
-   ('autolock',{'entity':'lock.front','door_entity':'sensor.door','door_open':'open','door_closed':'closed','autolock_delay':30},3),
+   ('door_blink',{'entity':'lock.front','door_entity':'sensor.door','door_open':'open','door_closed':'closed','blink_light':'light.pultskjermer','blink_count':3,'blink_interval':0.5,'unlock_window':60},7),
+   ('autolock',{'entity':'lock.front','door_entity':'sensor.door','door_open':'open','door_closed':'closed','autolock_delay':30},9),
    ('face_unlock',{'entity':'lock.front',**{'webhook_'+p:'smoke_only_'+p+'_xxxxxxxxxxxxxxxxxxxx' for p in ['rune','cybele','sebastian']}},3),
   ]:
    extra=config_entries.ConfigEntry(version=1,minor_version=1,domain='ki_notifications',title=kind,data={'kind':kind,'name':kind,**settings},options={},source='user',unique_id=None,discovery_keys={},subentries_data=[])

@@ -17,7 +17,7 @@ from .const import DOMAIN, PEOPLE, INVALID, flags, SECURITY_KINDS
 from .logic import alarm_event, presence_event, vacuum_actions, minutes, choose_departure
 
 _LOGGER = logging.getLogger(__name__)
-PLATFORMS = [Platform.SWITCH, Platform.BUTTON, Platform.SENSOR, Platform.NUMBER]
+PLATFORMS = [Platform.SWITCH, Platform.BUTTON, Platform.SENSOR, Platform.NUMBER, Platform.BINARY_SENSOR]
 
 async def async_setup_entry(hass, entry):
     runtime = Runtime(hass, entry)
@@ -74,6 +74,8 @@ class Runtime(ExtraNotifications, Security, DoorBlink):
         self.jam_generation = 0
         self.security_init()
         self.blink_init()
+        self.last_test_result = 'Ikke testet'
+        self.last_test_at = None
 
     async def load(self):
         saved = await self.store.async_load() or {}
@@ -394,6 +396,13 @@ class Runtime(ExtraNotifications, Security, DoorBlink):
         await self.send('🚏 Neste avganger' + (' – TEST' if test else ''), '\n'.join(lines), 'mdi:bus-clock', test=test)
 
     async def test(self, key):
+        if self.kind == 'door_blink' and key == 'blink':
+            self.blink_start(test=True)
+            return
+        if self.kind == 'autolock' and key in {'autolock_check', 'autolock_start'}:
+            async with self.lock:
+                await self.test_autolock(start=key == 'autolock_start')
+            return
         if self.kind in SECURITY_KINDS:
             return
         async with self.lock:

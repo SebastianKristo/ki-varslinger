@@ -122,3 +122,23 @@ Slå på den nye funksjonsbryteren. Lås opp mens døren er lukket, og åpne den
 Lyset blinker tre ganger og går tilbake til rapportert tidligere av/på, lysstyrke og farge. Hvis lyset er en HA-gruppe med medlemsliste, gjenopprettes medlemmenes individuelle tilstander. Ingen blink køes mens en sekvens kjører. Avslått bryter stopper sekvensen og forsøker å gjenopprette lyset.
 
 Status viser **Av**, **Klar**, **Blinker** eller **Sikkerhetsfeil**. Attributtet `siste_blink` viser siste fullførte sekvens i denne kjøretiden. Gjenoppretting krever at lyset fortsatt er tilgjengelig og HA kjører; strømbrudd kan avbryte prosessen. Andre automasjoner eller manuelle lysendringer under blinkingen kan bli overskrevet når den lagrede tilstanden gjenopprettes.
+
+## Testknapper og døravlesning (2.2.0)
+
+Etter oppdatering og omstart kommer knappene og sensorene automatisk på eksisterende Autolås- og Dørlys-enheter. Oppsettet trenger ikke opprettes på nytt.
+
+| Knapp | Virkning |
+| --- | --- |
+| Test blinking | Blinker nå og gjenoppretter lyset. Fungerer også med automatisk blinking avslått. |
+| Kontroller autolås | Kontrollerer rå dørverdi, låstilstand, ventetid og tilgjengelig låsehandling. Låser ikke. |
+| Test autolås – lås etter ventetid | Starter vanlig nedtelling. Låser faktisk etter ventetiden hvis døren fortsatt er lukket og låsen er ulåst. Autolås-bryteren må være på. |
+
+En nedtelling som allerede kjører, beholdes. Åpning, ukjent dørverdi eller avslått Autolås avbryter også testnedtellingen. Testresultat-sensoren viser kontrollresultat eller at nedtellingen startet. Se Sikkerhetsstatus og Låsen er låst for endelig resultat; en sendt kommando bekrefter ikke fysisk låsing.
+
+| Sensor | På / true | Av / false | Ukjent |
+| --- | --- | --- | --- |
+| Dørverdi gjenkjent | Råverdien matcher konfigurert åpen eller lukket | Manglende/ukjent eller annen råverdi | — |
+| Døren er lukket | Matcher lukket-verdi | Matcher åpen-verdi | Ingen gjenkjent dørverdi |
+| Låsen er låst | Låsen rapporterer locked | Låsen rapporterer unlocked | Låsen mangler, er utilgjengelig eller har en mellom-/feiltilstand |
+
+Home Assistant viser disse som På/Av (råtilstand on/off); attributtet `tolket_verdi` er true/false eller null. `kilde` og `raverdi` viser hva integrasjonen leser. Verdiene oppdateres også når automatikkbryteren er av. Åpne og lukk døren fysisk for å kontrollere at visningen følger riktig vei. Gjenkjent verdi bekrefter samsvar med oppsettet, ikke at sensoren er fysisk korrekt eller koblet til riktig dør.

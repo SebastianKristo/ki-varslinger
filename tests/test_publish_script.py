@@ -45,26 +45,26 @@ if sys.argv[1:3]==['repo','view']:print('false')
             calls=base/'calls.jsonl'
             env.update(PATH=str(bin_dir)+os.pathsep+env['PATH'],TEST_REMOTE=str(remote),REAL_GIT=real_git,GH_CALLS=str(calls))
             downloads=home/'Downloads';downloads.mkdir()
-            archive=downloads/'ki-varslinger-2.1.0.zip'
+            archive=downloads/'ki-varslinger-2.2.0.zip'
             with zipfile.ZipFile(archive,'w') as z:
                 for p in ROOT.rglob('*'):
                     if p.is_file() and '__pycache__' not in p.parts and '.git' not in p.parts:
                         z.write(p,Path('ki-varslinger')/p.relative_to(ROOT))
             script=ROOT/'scripts/publish-macos.sh'
-            run=subprocess.run(['bash',str(script),'2.1.0'],env=env,capture_output=True,text=True)
+            run=subprocess.run(['bash',str(script),'2.2.0'],env=env,capture_output=True,text=True)
             self.assertEqual(run.returncode,0,run.stdout+run.stderr)
             self.assertEqual(git('--git-dir',str(remote),'show','main:keep.txt').strip(),'Unrelated file must survive.')
-            self.assertEqual(git('--git-dir',str(remote),'rev-parse','main').strip(),git('--git-dir',str(remote),'rev-parse','v2.1.0^{}').strip())
+            self.assertEqual(git('--git-dir',str(remote),'rev-parse','main').strip(),git('--git-dir',str(remote),'rev-parse','v2.2.0^{}').strip())
             github_calls=[json.loads(line) for line in calls.read_text().splitlines()]
             self.assertEqual(sum(c[:2]==['release','create'] for c in github_calls),1)
-            second=subprocess.run(['bash',str(script),'2.1.0'],env=env,capture_output=True,text=True)
+            second=subprocess.run(['bash',str(script),'2.2.0'],env=env,capture_output=True,text=True)
             self.assertNotEqual(second.returncode,0)
             self.assertIn('finnes allerede',second.stderr)
             github_calls=[json.loads(line) for line in calls.read_text().splitlines()]
             self.assertEqual(sum(c[:2]==['release','create'] for c in github_calls),1)
             local=home/'Documents/HomeAssistant/ki-varslinger'
             (local/'keep.txt').write_text('Local modification')
-            third=subprocess.run(['bash',str(script),'2.1.0'],env=env,capture_output=True,text=True)
+            third=subprocess.run(['bash',str(script),'2.2.0'],env=env,capture_output=True,text=True)
             self.assertNotEqual(third.returncode,0)
             self.assertIn('lokale endringer',third.stderr)
 

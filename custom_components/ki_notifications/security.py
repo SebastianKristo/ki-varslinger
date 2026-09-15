@@ -115,6 +115,54 @@ class Security:
             'planlagt_lasing': self.autolock_deadline,
         }
 
+    def test_result(self, message):
+        self.last_test_result = message
+        self.last_test_at = dt_util.utcnow().isoformat()
+        self.update()
+
+    async def test_autolock(self, *, start=False):
+        if self.closed:
+            return
+        door = self.hass.states.get(self.cfg['door_entity'])
+        lock = self.hass.states.get(self.cfg['entity'])
+        if not door or door.state not in {self.cfg['door_open'], self.cfg['door_closed']}:
+            self.test_result('Feil: dørverdien gjenkjennes ikke. Kontroller åpen/lukket i oppsettet.')
+            return
+        if not lock or lock.state not in {'locked', 'unlocked'}:
+            self.test_result('Feil: låsen rapporterer ikke låst eller ulåst.')
+            return
+        delay = self.autolock_seconds
+        if helper := self.cfg.get('delay_helper'):
+            state = self.hass.states.get(helper)
+            try:
+                delay = float(state.state) if state else float('nan')
+            except ValueError:
+                delay = float('nan')
+        if not math.isfinite(delay) or not 5 <= delay <= 3600:
+            self.test_result('Feil: ventetiden må være 5–3600 sekunder.')
+            return
+        if not self.hass.services.has_service('lock', 'lock'):
+            self.test_result('Feil: handlingen lock.lock er utilgjengelig.')
+            return
+        if not start:
+            self.test_result('Sensorverdier gjenkjent. Ingen låsing utført. Autolås er ' + ('på.' if self.enabled['enabled'] else 'av.'))
+            return
+        if not self.enabled['enabled']:
+            self.test_result('Test ikke startet: slå på Autolås først.')
+            return
+        if door.state != self.cfg['door_closed']:
+            self.test_result('Test ikke startet: døren må være lukket.')
+            return
+        if lock.state == 'locked':
+            self.test_result('Test ikke startet: døren er allerede låst.')
+            return
+        if self.auto_cancel:
+            self.test_result('Autolås teller allerede ned. Eksisterende tidspunkt beholdes.')
+            return
+        self.door_closed_at = self.hass.loop.time()
+        self.schedule_autolock()
+        self.test_result(f'Nedtelling startet ({delay:g} sekunder). Se Sikkerhetsstatus og Låsen er låst for resultat.')
+
     def schedule_autolock(self):
         self.cancel_autolock()
         if self.closed or not self.enabled['enabled'] or self.door_closed_at is None:
@@ -185,6 +233,7 @@ class Security:
             if entity_id == self.cfg.get('delay_helper'):
                 if self.door_closed_at is not None:
                     self.schedule_autolock()
+                self.update()
                 return
             if entity_id != self.cfg['door_entity']:
                 self.update()

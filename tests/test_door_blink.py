@@ -187,3 +187,28 @@ class DoorBlinkTests(unittest.IsolatedAsyncioTestCase):
         await self.hass.async_block_till_done()
         self.assertEqual(len(self.calls), 7)
         self.assertTrue(all(data['transition'] == 0 for action, data in self.calls))
+
+    async def test_blink_button_runs_while_automatic_function_disabled(self):
+        r = self.runtime()
+        self.assertFalse(r.enabled['enabled'])
+        await r.test('blink')
+        await r.blink_task
+        self.assertEqual(len(self.calls), 7)
+        self.assertIn('fullført', r.last_test_result)
+        self.assertFalse(r.enabled['enabled'])
+
+    async def test_blink_test_reports_unavailable_light(self):
+        r = self.runtime()
+        self.hass.states.async_set('light.pultskjermer', 'unavailable')
+        await r.test('blink')
+        await r.blink_task
+        self.assertFalse(self.calls)
+        self.assertIn('mislyktes', r.last_test_result)
+
+    async def test_disabled_blink_still_updates_reading_sensors(self):
+        r = self.runtime()
+        updates = []
+        r.listeners.add(lambda: updates.append(True))
+        await self.change(r, 'sensor.door', 'open')
+        self.assertTrue(updates)
+        self.assertFalse(self.calls)

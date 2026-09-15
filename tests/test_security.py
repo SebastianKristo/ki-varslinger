@@ -11,6 +11,7 @@ from custom_components.ki_notifications import Runtime
 from custom_components.ki_notifications.const import DOMAIN,PEOPLE
 from custom_components.ki_notifications.config_flow import errors
 from custom_components.ki_notifications import number,sensor,button
+from custom_components.ki_notifications.binary_sensor import DoorReading
 
 MODULE='custom_components.ki_notifications.security.'
 
@@ -44,7 +45,7 @@ class SecurityTests(unittest.IsolatedAsyncioTestCase):
             self.assertFalse(r.enabled['enabled'])
             self.hass.data[DOMAIN]={r.entry.entry_id:r};entities=[]
             await button.async_setup_entry(self.hass,r.entry,entities.extend)
-            self.assertEqual(entities,[])
+            self.assertEqual(len(entities), 2 if r.kind == 'autolock' else 0)
             await r.test('test')
         self.assertEqual(self.calls,[])
     async def test_autolock_close_timer_and_final_door_check(self):
@@ -261,4 +262,73 @@ class SecurityTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(errors(self.hass,'autolock',r.cfg),{})
         self.assertEqual(errors(self.hass,'autolock',{**r.cfg,'door_closed':'open'}),{'base':'invalid_door_states'})
 
-if __name__=='__main__':unittest.main()
+
+    async def test_reading_sensors_distinguish_false_from_unknown(self):
+        r=self.auto()
+        valid=DoorReading(r,'door_valid','Test','mdi:door')
+        closed=DoorReading(r,'door_closed','Test','mdi:door')
+        locked=DoorReading(r,'lock_locked','Test','mdi:lock')
+        self.assertFalse(valid.is_on);self.assertIsNone(closed.is_on)
+        self.hass.states.async_set('sensor.door','closed')
+        self.assertTrue(valid.is_on);self.assertTrue(closed.is_on)
+        self.hass.states.async_set('sensor.door','open')
+        self.assertTrue(valid.is_on);self.assertFalse(closed.is_on)
+        self.hass.states.async_set('sensor.door','false')
+        self.assertFalse(valid.is_on);self.assertIsNone(closed.is_on)
+        self.assertEqual(valid.extra_state_attributes['raverdi'],'false')
+        r.cfg.update(door_open='true',door_closed='false')
+        self.assertTrue(valid.is_on);self.assertTrue(closed.is_on)
+        for value,result in [('locked',True),('unlocked',False),('unavailable',None),('locking',None)]:
+            self.hass.states.async_set('lock.front',value)
+            self.assertIs(locked.is_on,result)
+
+    async def test_autolock_diagnostic_does_not_operate_lock(self):
+        r=self.auto()
+        self.hass.states.async_set('sensor.door','closed')
+        self.hass.states.async_set('lock.front','unlocked')
+        await r.test('autolock_check')
+        self.assertIn('gjenkjent',r.last_test_result)
+        self.assertFalse(self.calls);self.assertIsNone(r.auto_cancel)
+        self.hass.states.async_set('sensor.door','wrong')
+        await r.test('autolock_check')
+        self.assertIn('Feil',r.last_test_result)
+
+    async def test_autolock_test_uses_timer_and_does_not_extend_existing_timer(self):
+        r=self.auto();await r.toggle('enabled',True)
+        self.hass.states.async_set('sensor.door','closed')
+        self.hass.states.async_set('lock.front','unlocked')
+        with patch(MODULE+'async_call_later',return_value=Mock()) as later:
+            await r.test('autolock_start')
+            self.assertFalse(self.calls)
+            self.assertAlmostEqual(later.call_args.args[1],30,delta=1)
+            await r.test('autolock_start')
+            self.assertEqual(later.call_count,1)
+            await later.call_args.args[2](None)
+            self.assertEqual(self.calls[0][:2],('lock','lock'))
+
+    async def test_autolock_test_rejects_disabled_open_unknown_or_invalid_delay(self):
+        r=self.auto()
+        self.hass.states.async_set('sensor.door','closed')
+        self.hass.states.async_set('lock.front','unlocked')
+        await r.test('autolock_start');self.assertIn('slå på',r.last_test_result)
+        await r.toggle('enabled',True)
+        for value in ['open','unavailable','unrecognized']:
+            self.hass.states.async_set('sensor.door',value)
+            await r.test('autolock_start');self.assertIsNone(r.auto_cancel)
+        self.hass.states.async_set('sensor.door','closed')
+        r.cfg['delay_helper']='input_number.delay'
+        self.hass.states.async_set('input_number.delay','nan')
+        await r.test('autolock_start')
+        self.assertIn('ventetiden',r.last_test_result)
+        self.assertIsNone(r.auto_cancel);self.assertFalse(self.calls)
+
+    async def test_autolock_test_cancels_if_door_reopens(self):
+        r=self.auto();await r.toggle('enabled',True)
+        self.hass.states.async_set('sensor.door','closed')
+        self.hass.states.async_set('lock.front','unlocked')
+        with patch(MODULE+'async_call_later',return_value=Mock()) as later:
+            await r.test('autolock_start');due=later.call_args.args[2]
+            self.hass.states.async_set('sensor.door','open')
+            await self.change(r,'sensor.door','closed','open')
+            await due(None)
+        self.assertFalse(self.calls)

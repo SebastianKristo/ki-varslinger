@@ -28,10 +28,12 @@ class DoorBlink:
         if not self.enabled['enabled'] or self.closed:
             self.blink_unlocked_at = None
             self.blink_lock_was_locked = False
+            self.update()
             return
         if not new or new.state in INVALID:
             self.blink_unlocked_at = None
             self.blink_lock_was_locked = False
+            self.update()
             return
         if old and old.state == new.state:
             return
@@ -76,11 +78,15 @@ class DoorBlink:
             return [s for member in members for s in self.blink_snapshots(member, seen)]
         return [state]
 
-    def blink_start(self):
-        if self.closed or not self.enabled['enabled'] or (self.blink_task and not self.blink_task.done()):
+    def blink_start(self, *, test=False):
+        if self.closed or (not self.enabled['enabled'] and not test):
+            return
+        if self.blink_task and not self.blink_task.done():
+            if test: self.test_result('Lyset blinker allerede.')
             return
         self.blink_stop = asyncio.Event()
-        self.blink_task = self.hass.async_create_task(self.blink_run(), 'KI dørlys')
+        self.blink_task = self.hass.async_create_task(self.blink_run(test=test), 'KI dørlys', eager_start=False)
+        if test: self.test_result('Blinketest startet.')
 
     async def blink_light_call(self, action, data):
         state = self.hass.states.get(data['entity_id'])
@@ -114,7 +120,7 @@ class DoorBlink:
             data['white'] = attrs['brightness']
         return 'turn_on', data
 
-    async def blink_run(self):
+    async def blink_run(self, *, test=False):
         reserved = self.hass.data.setdefault(DOMAIN + '_blink_lights', set())
         snapshots = []
         owned = set()
@@ -151,4 +157,6 @@ class DoorBlink:
                     self.security_error = f'Kunne ikke gjenopprette lyset ({type(err).__name__}).'
             reserved.difference_update(owned)
             self.blink_task = None
+            if test:
+                self.test_result(self.security_error or ('Blinketest avbrutt; gjenoppretting sendt.' if self.blink_stop.is_set() or self.closed else 'Blinketest fullført; gjenoppretting sendt.'))
             self.update()

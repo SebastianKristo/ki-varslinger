@@ -1,11 +1,11 @@
 #!/bin/bash
-# Bruk: bash publish-macos.sh 2.1.0 [sti/til/ki-varslinger-2.1.0.zip]
+# Bruk: bash publish-macos.sh 2.2.0 [sti/til/ki-varslinger-2.2.0.zip]
 # Kjorer pa macOS med Bash 3.2+, Git, GitHub CLI, Python 3 og rsync.
 set -euo pipefail
 
 V="${1:-}"
 if [[ ! "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "Bruk: bash $0 2.1.0 [sti/til/ki-varslinger-2.1.0.zip]" >&2
+  echo "Bruk: bash $0 2.2.0 [sti/til/ki-varslinger-2.2.0.zip]" >&2
   exit 1
 fi
 GH_REPO="SebastianKristo/ki-varslinger"
