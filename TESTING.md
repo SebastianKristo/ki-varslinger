@@ -1,4 +1,4 @@
-# Testresultat – KI Varslinger og sikkerhet 2.3.0
+# Testresultat – KI Varslinger og sikkerhet 2.4.0
 
 Testet 15. september 2026 med Python 3.13.15 og Home Assistant Core 2025.12.5 i et isolert lokalt miljø.
 
@@ -78,3 +78,15 @@ Innlastingstesten besto med ni entiteter for Autolås og sju for Dørlys. Tidlig
 Fire nye tester dekker: avvist webhook i sperretiden etter en registrert åpen → lukket-overgang, bekreftet opplåsing igjen når sperretiden er ute, avvisning mens døren rapporterer åpen, nullstilling ved ny åpning, ukjent dørverdi som ikke sperrer, statusteksten «Sperret etter lukking» uten låsekode i attributtene, at den virkelige tilstandslytteren fanger opp dørsensoren, og at oppsett uten dørsensor oppfører seg som i 2.2.0. Validering av åpen/lukket-verdiene i skjemaet er også dekket.
 
 78 tester bestått. De nye testene bruker simulerte `lock.unlock`-handlinger og HAs egen tilstandsmaskin; ingen fysisk dør, lås eller kamera er betjent. Kjøringen her brukte et isolert testmiljø; kjøringen mot Home Assistant 2025.12.5 og innlastingstesten må bekreftes av GitHub Actions etter opplasting.
+
+## Publiseringstesten 2.3.1
+
+`tests/test_publish_script.py` hadde versjonsnummeret hardkodet og bygget testpakka med det. Publiseringsskriptet avviser en pakke der `manifest.json` ikke har samme versjon som argumentet, så testen feilet på GitHub så snart versjonen ble bumpet til 2.3.0 – uten at integrasjonen selv var i veien. Testen leser nå versjonen fra manifestet.
+
+Alle 78 tester ble kjørt med `rsync` og `git` tilgjengelig denne gangen, så publiseringstesten ble faktisk utført og ikke hoppet over. Kjøringen mot Home Assistant 2025.12.5 og innlastingstesten må fortsatt bekreftes av GitHub Actions.
+
+## Stedsnavn i familievarslene 2.4.0
+
+To nye tester dekker: egendefinert stedsnavn som tittel med uendret meldingstekst, servernavnet som tittel når overstyringen er tom, samme tittel fra testknappene, uendrede titler når bryteren er av, og fallback til «🚶 Forlot huset» / «🏠 Kom hjem» når både overstyring og servernavn mangler.
+
+80 tester bestått, inkludert publiseringstesten. Kjøringen mot Home Assistant 2025.12.5 og innlastingstesten bekreftes av GitHub Actions.

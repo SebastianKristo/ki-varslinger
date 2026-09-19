@@ -72,7 +72,9 @@
           "blink_count": "Antall blink",
           "blink_interval": "Varighet per av/på-trinn (sekunder)",
           "unlock_window": "Maks tid fra opplåsing til åpning (sekunder)",
-          "door_block": "Sperretid etter at døren lukkes (sekunder, 0 = av)"
+          "door_block": "Sperretid etter at døren lukkes (sekunder, 0 = av)",
+          "site_title": "Vis stedsnavn som tittel",
+          "site_name": "Stedsnavn (tomt = navnet på Home Assistant-serveren)"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",
@@ -163,7 +165,9 @@
           "blink_count": "Antall blink",
           "blink_interval": "Varighet per av/på-trinn (sekunder)",
           "unlock_window": "Maks tid fra opplåsing til åpning (sekunder)",
-          "door_block": "Sperretid etter at døren lukkes (sekunder, 0 = av)"
+          "door_block": "Sperretid etter at døren lukkes (sekunder, 0 = av)",
+          "site_title": "Vis stedsnavn som tittel",
+          "site_name": "Stedsnavn (tomt = navnet på Home Assistant-serveren)"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",

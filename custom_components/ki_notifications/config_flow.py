@@ -32,6 +32,8 @@ def schema(hass, kind, saved):
         for p in PEOPLE:
             known = f'switch.{p}_posisjon_hjemme_borte'
             add(p, entity(['switch', 'input_boolean', 'binary_sensor']), known if hass.states.get(known) else None)
+        add('site_title', selector.BooleanSelector(), False)
+        add('site_name', text, required=False)
     elif kind == 'vacuum':
         known = 'vacuum.sir_sweeps_a_lot'
         add('entity', entity(['vacuum']), known if hass.states.get(known) else None)

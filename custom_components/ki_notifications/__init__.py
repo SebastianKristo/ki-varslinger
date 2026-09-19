@@ -286,10 +286,17 @@ class Runtime(ExtraNotifications, Security, DoorBlink):
             self.last_sent = dt_util.utcnow().isoformat()
         self.update()
 
+    def site_label(self):
+        """Empty means the ordinary title. An override wins over the server name."""
+        if not self.cfg.get('site_title'):
+            return ''
+        return str(self.cfg.get('site_name') or '').strip() or str(self.hass.config.location_name or '').strip()
+
     async def family_notice(self, p, event, test=False):
         name = 'Test' if test else PEOPLE[p]
         away = event == 'away'
-        await self.send('🚶 Forlot huset' if away else '🏠 Kom hjem', f"{name} {'forlot huset' if away else 'kom hjem'}.", 'mdi:home-export-outline' if away else 'mdi:home-import-outline', away=away, test=test)
+        title = self.site_label() or ('🚶 Forlot huset' if away else '🏠 Kom hjem')
+        await self.send(title, f"{name} {'forlot huset' if away else 'kom hjem'}.", 'mdi:home-export-outline' if away else 'mdi:home-import-outline', away=away, test=test)
 
     async def alarm_notice(self, event, test=False):
         titles = {'armed':'🔒 Alarm aktivert', 'disarmed':'🔓 Alarm deaktivert', 'triggered':'🚨 Alarm utløst'}

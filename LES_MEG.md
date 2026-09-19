@@ -1,4 +1,4 @@
-# KI Varslinger og sikkerhet 2.3.0
+# KI Varslinger og sikkerhet 2.4.0
 
 En egendefinert Home Assistant-integrasjon for familie, støvsuger, alarm, egne tilstandsendringer og Ruter-varsler. Oppsett og endringer gjøres i brukergrensesnittet. Ingen YAML-pakke eller KI-testskript kreves.
 
@@ -133,6 +133,19 @@ Velg hjemme/borte-bryteren til hver person. De kjente Homey-bryterne foreslås h
 Seks separate av/på-brytere styrer ankomst og avreise uavhengig for hver person. Valgene lagres ved endring og gjenopprettes ved omstart. Testknappene omgår disse bryterne og sender «Test kom hjem.» eller «Test forlot huset.».
 
 Det sendes ikke ankomst-/avreisevarsler bare fordi en entitet blir tilgjengelig etter `unknown` eller `unavailable`. Hver faktisk ankomst/avreise er et eget varsel.
+
+### Stedsnavn som tittel (2.4.0)
+
+Har du Home Assistant på flere steder, er det ikke synlig i varselet hvilken instans som sendte det. Slå på **Vis stedsnavn som tittel** i familieoppsettet, så blir tittelen stedsnavnet og meldingen står som før på linjen under:
+
+```
+Toten
+Cybele forlot huset.
+```
+
+Lar du **Stedsnavn** stå tomt, brukes navnet på Home Assistant-serveren, altså det du har satt under **Innstillinger → System → Generelt → Navn på Home Assistant-installasjon**. Skriv inn et eget navn i feltet hvis du vil ha noe annet enn servernavnet, for eksempel «Hytta» i stedet for «Strömstad». Er begge tomme – servernavnet er ikke satt og feltet er tomt – brukes den vanlige tittelen.
+
+Bryteren er av som standard, så eksisterende oppsett ser uendret ut etter oppdatering. Valget gjelder bare det familieoppsettet du endrer, og det brukes også av testknappene. Emojiene 🚶 og 🏠 forsvinner fra tittelen når stedsnavnet er på; ikonet i varselet er uendret.
 
 ## Støvsuger – Sir Sweeps A Lot
 
