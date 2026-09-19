@@ -21,6 +21,10 @@ class Security:
         self.registered_hooks = []
         self.face_future = None
         self.face_last_attempt = None
+        self.face_door_closed_at = None
+        self.face_block_cancel = None
+        self.face_last_result = ''
+        self.face_last_result_at = None
         self.last_unlock_person = None
         self.last_unlock_at = None
         self.security_error = ''
@@ -42,6 +46,7 @@ class Security:
 
     def security_close(self):
         self.cancel_autolock()
+        self.cancel_face_block()
         self.clear_sync()
         for hook_id in self.registered_hooks:
             webhook.async_unregister(self.hass,hook_id)
@@ -229,6 +234,11 @@ class Security:
         if self.kind == 'door_blink':
             await self.blink_changed(old, new, entity_id)
             return
+        if self.kind == 'face_unlock':
+            if entity_id == self.cfg.get('door_entity'):
+                self.face_door_changed(old, new)
+            self.update()
+            return
         if self.kind == 'autolock':
             if entity_id == self.cfg.get('delay_helper'):
                 if self.door_closed_at is not None:
@@ -336,6 +346,68 @@ class Security:
         if targets:
             await self.security_call('switch','turn_on' if value=='disarmed' else 'turn_off',targets)
 
+    def cancel_face_block(self):
+        if self.face_block_cancel:
+            self.face_block_cancel()
+            self.face_block_cancel = None
+
+    def face_block_remaining(self):
+        """Seconds left of the block that follows a confirmed door closing."""
+        try:
+            seconds = float(self.cfg.get('door_block', 0) or 0)
+        except (TypeError, ValueError):
+            return 0.0
+        if self.face_door_closed_at is None or seconds <= 0:
+            return 0.0
+        return max(0.0, seconds - (self.hass.loop.time() - self.face_door_closed_at))
+
+    def face_block_reason(self):
+        """Empty string means nothing blocks an unlock right now."""
+        if not self.cfg.get('door_entity'):
+            return ''
+        door = self.hass.states.get(self.cfg['door_entity'])
+        if door and door.state == self.cfg.get('door_open'):
+            return 'Døren står åpen; ingen opplåsing utført.'
+        remaining = self.face_block_remaining()
+        if remaining > 0:
+            return f'Døren ble nettopp lukket. Sperren varer {remaining:.0f} sekunder til; ingen opplåsing utført.'
+        return ''
+
+    def face_result(self, message):
+        self.face_last_result = message
+        self.face_last_result_at = dt_util.utcnow().isoformat()
+        self.update()
+
+    def face_attributes(self):
+        door = self.hass.states.get(self.cfg['door_entity']) if self.cfg.get('door_entity') else None
+        return {
+            'dorsensor': self.cfg.get('door_entity'),
+            'dorverdi': door.state if door else None,
+            'dorsperre_sekunder': self.cfg.get('door_block'),
+            'dorsperre_igjen': round(self.face_block_remaining()),
+            'siste_forsok': self.face_last_result,
+            'siste_forsok_tid': self.face_last_result_at,
+        }
+
+    def face_door_changed(self, old, new):
+        """A registered open -> closed means somebody just left; hold unlocks back."""
+        self.cancel_face_block()
+        opened, closed = self.cfg.get('door_open'), self.cfg.get('door_closed')
+        if not new or new.state not in {opened, closed}:
+            self.face_door_closed_at = None
+            return
+        if new.state == closed:
+            if old is not None and old.state == opened:
+                self.face_door_closed_at = self.hass.loop.time()
+        else:
+            self.face_door_closed_at = None
+        remaining = self.face_block_remaining()
+        if remaining > 0:
+            async def lapsed(now):
+                self.face_block_cancel = None
+                self.update()
+            self.face_block_cancel = async_call_later(self.hass, remaining, lapsed)
+
     async def face_request(self, person, request):
         if request.method == 'HEAD':
             return web.Response(status=200)
@@ -346,6 +418,10 @@ class Security:
         async with self.lock:
             if self.closed or not self.enabled['enabled']:
                 return web.Response(status=403)
+            blocked = self.face_block_reason()
+            if blocked:
+                self.face_result(blocked)
+                return web.Response(status=409,text=blocked)
             now = self.hass.loop.time()
             if self.face_last_attempt is not None and now-self.face_last_attempt < self.cfg.get('face_cooldown',10):
                 return web.Response(status=429,text='Vent før nytt forsøk.')
@@ -353,6 +429,7 @@ class Security:
             if not target or target.state not in {'locked','unlocked'}:
                 return web.Response(status=409,text='Låsen har ingen bekreftet stabil tilstand.')
             if target.state == 'unlocked':
+                self.face_result('Låsen var allerede ulåst; ingen ny opplåsing registrert.')
                 return web.Response(status=200,text='Allerede ulåst; ingen ny opplåsing registrert.')
             self.face_last_attempt = now
             future = self.hass.loop.create_future()
@@ -375,11 +452,11 @@ class Security:
                 self.last_unlock_person = PEOPLE[person]
                 self.last_unlock_at = dt_util.utcnow().isoformat()
                 await self.save_settings()
-                self.update()
+                self.face_result('Opplåsing bekreftet for ' + PEOPLE[person] + '.')
                 return web.Response(status=200,text='Opplåsing bekreftet.')
             except TimeoutError:
                 self.security_error = 'Opplåsing ble ikke bekreftet av låsen innen 15 sekunder.'
-                self.update()
+                self.face_result(self.security_error)
                 return web.Response(status=504,text='Ingen bekreftelse fra låsen.')
             except asyncio.CancelledError:
                 if self.closed:

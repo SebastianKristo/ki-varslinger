@@ -1,12 +1,11 @@
-# KI Varslinger og sikkerhet 2.2.0
+# KI Varslinger og sikkerhet 2.3.0
 
-- **Test blinking:** umiddelbar blinketest, også når automatisk blinking er av. Gjenoppretter tidligere lysinnstillinger.
-- **Kontroller autolås:** kontrollerer oppsett og råverdier uten låsekommando.
-- **Test autolås – lås etter ventetid:** starter nedtelling og kan faktisk låse. Krever aktivert autolås, gjenkjent lukket dør og ulåst lås. Avbrytes ved åpning, ukjent dørtilstand eller avslått funksjon.
-- **Dørverdi gjenkjent**, **Døren er lukket** og **Låsen er låst** viser tolkningen av kildene. Ukjent tilstand blir ikke tolket som åpen eller ulåst.
-- **Testresultat** viser siste testbeskjed og tidspunkt. Sensorene oppdateres også når automatikk er av.
-- Rettet rekkefølge ved oppstart av blinkejobben slik at en rask test ikke overskriver sluttresultatet med «startet».
+- **Ansiktsgjenkjenning – sperre etter at døren lukkes:** en webhook låser ikke opp rett etter at døren er registrert lukket. Det tolkes som at noen nettopp gikk ut og låste bak seg.
+- Nye valgfrie innstillinger på ansiktsgjenkjenningsoppsettet: dørsensor, sensorverdier for åpen og lukket, og **Sperretid etter at døren lukkes** (standard 60 sekunder, `0` slår sperren av). Velg en sperretid som er lengre enn ventetiden i Autolås.
+- Kall i sperretiden, og kall mens døren rapporterer åpen, besvares med HTTP 409 og en forklaring. Ingen opplåsingskommando sendes, og **Sist låst opp av** endres ikke.
+- Sperren nullstilles når døren åpnes. Ukjent eller utilgjengelig dørverdi sperrer ikke, så en sensorfeil setter ikke ansiktsgjenkjenningen ut av spill.
+- **Sikkerhetsstatus** viser **Sperret etter lukking** og nye attributter `dorsperre_sekunder`, `dorsperre_igjen`, `dorsensor`, `dorverdi`, `siste_forsok` og `siste_forsok_tid`. Webhook-ID og låsekode inngår ikke.
 
-Knappene og sensorene legges automatisk til eksisterende oppsett etter HACS-oppdatering og omstart. Ingen ny konfigurasjon kreves. Kontroller fysisk at dørvisningen følger åpning/lukking; gjenkjent verdi betyr samsvar med konfigurasjonen.
+Eksisterende oppsett beholdes. Uten valgt dørsensor er oppførselen uendret fra 2.2.0. Sperren lagres ikke over omstart; døren må åpnes og lukkes på nytt etter reload.
 
-74 tester og innlastingstest bestått i et isolert HA-miljø med simulerte tjenester. Fysisk lampe og lås er ikke testet. Se TESTING.md.
+78 tester bestått i et isolert HA-miljø med simulerte tjenester. Fysisk lås, dørkontakt og kamera er ikke testet. Se TESTING.md.

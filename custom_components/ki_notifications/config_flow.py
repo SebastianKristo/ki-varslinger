@@ -90,6 +90,11 @@ def schema(hass, kind, saved):
             add('webhook_'+person, selector.TextSelector(selector.TextSelectorConfig(type='password')), secrets.token_urlsafe(32))
         add('allow_get', selector.BooleanSelector(), False)
         add('face_cooldown', selector.NumberSelector(selector.NumberSelectorConfig(min=1,max=120,mode='box',unit_of_measurement='s')), 10)
+        known = 'sensor.inngangsdor'
+        add('door_entity', entity(['sensor','binary_sensor']), known if hass.states.get(known) else None, False)
+        add('door_open', text, 'open')
+        add('door_closed', text, 'closed')
+        add('door_block', selector.NumberSelector(selector.NumberSelectorConfig(min=0,max=900,step=1,mode='box',unit_of_measurement='s')), 60)
     elif kind == 'weather_ai':
         known = 'weather.forecast_home'
         add('weather_entity', entity(['weather']), known if hass.states.get(known) else None)
@@ -142,6 +147,8 @@ def errors(hass, kind, data, entry_id=None):
         if values[0] == values[1] or (source and any(v not in source.attributes.get('options',[]) for v in values)):
             return {'base': 'invalid_homey_options'}
     if kind == 'face_unlock':
+        if data.get('door_entity') and (data.get('door_open') == data.get('door_closed') or any(v in [None,'unknown','unavailable',''] for v in [data.get('door_open'), data.get('door_closed')])):
+            return {'base': 'invalid_door_states'}
         ids = [data['webhook_'+p] for p in PEOPLE]
         if len(set(ids)) != 3 or any(len(x)<16 or any(ch in x for ch in '/?#') for x in ids):
             return {'base': 'invalid_webhooks'}

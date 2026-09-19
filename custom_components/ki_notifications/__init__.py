@@ -146,6 +146,8 @@ class Runtime(ExtraNotifications, Security, DoorBlink):
         if self.kind == 'door_blink':
             entities.append(c['door_entity'])
             self.unsubs.append(self.hass.bus.async_listen_once('homeassistant_stop', self.blink_finish))
+        if self.kind == 'face_unlock' and c.get('door_entity'):
+            entities.append(c['door_entity'])
         if self.kind == 'alarm_sync':
             entities.append(c['homey_select'])
         if self.kind == 'alarm' and c.get('triggered_sensor'):

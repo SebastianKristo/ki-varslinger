@@ -12,7 +12,7 @@ Integrasjon for varslinger og sikkerhet i Home Assistant med oppsett i brukergre
 | Dørlys | Blinker pultskjermene etter opplåsing og åpning, med gjenoppretting. |
 | Autolås | Låser etter bekreftet lukking. Tallfelt for sekunder, eller eksisterende input_number. |
 | Heimdall ↔ Alarmo | Toveis armering/deaktivering og kameraenes privacy mode. |
-| Ansiktsgjenkjenning | Tre lokale webhooks, bekreftet opplåsing og sensor for person/tid. |
+| Ansiktsgjenkjenning | Tre lokale webhooks, bekreftet opplåsing, sensor for person/tid og sperre rett etter at døren lukkes. |
 | Familie | Rune, Cybele og Sebastian. Egne brytere for kom hjem / forlot huset per person. |
 | Roborock | Oppdatering av samme varsel, romvisning, Pause/Start, Stopp og Hjem. |
 | Alarm | Aktivering, deaktivering og utløst alarm. Alarmenheter eller Homey-brytere. |
@@ -53,32 +53,32 @@ Støvsugeren bruker vanlige Companion-varsler med samme `tag`, ikke iOS Live Act
 
 ## Publiser fra Mac
 
-Last ned `ki-varslinger-2.0.1.zip` til `~/Downloads`. Kjør:
+Last ned `ki-varslinger-2.3.0.zip` til `~/Downloads`. Kjør:
 
 ```bash
-mkdir -p "$HOME/Downloads/ki-varslinger-2.0.1"
-ditto -x -k "$HOME/Downloads/ki-varslinger-2.0.1.zip" "$HOME/Downloads/ki-varslinger-2.0.1"
-bash "$HOME/Downloads/ki-varslinger-2.0.1/ki-varslinger/scripts/publish-macos.sh" 2.0.1
+mkdir -p "$HOME/Downloads/ki-varslinger-2.3.0"
+ditto -x -k "$HOME/Downloads/ki-varslinger-2.3.0.zip" "$HOME/Downloads/ki-varslinger-2.3.0"
+bash "$HOME/Downloads/ki-varslinger-2.3.0/ki-varslinger/scripts/publish-macos.sh" 2.3.0
 ```
 
 Skriptet bruker `~/Documents/HomeAssistant/ki-varslinger`, eksisterende GitHub CLI-innlogging og grenen `main`. Det oppdaterer repoets beskrivelse, topics og Issues, pusher commit/tag og publiserer en release med [RELEASE.md](RELEASE.md) og ZIP-en. Trenger du avhengighetene: `brew install git gh python rsync`.
 
 Lokale endringer og eksisterende versjonstagger stopper skriptet. Det overskriver ikke tagger og bruker ikke force-push. Nye versjoner må få nytt nummer i manifest, enhetens `sw_version`, releasenotat og pakkenavn. Bruk samme versjon som argument.
 
-Hvis push feiler etter at lokal commit/tag er opprettet, ligger arbeidet igjen lokalt. Løs den rapporterte feilen og kjør fra repoet, for eksempel for 2.0.1:
+Hvis push feiler etter at lokal commit/tag er opprettet, ligger arbeidet igjen lokalt. Løs den rapporterte feilen og kjør fra repoet, for eksempel for 2.3.0:
 
 ```bash
 cd "$HOME/Documents/HomeAssistant/ki-varslinger"
-git push --atomic origin main refs/tags/v2.0.1
+git push --atomic origin main refs/tags/v2.3.0
 ```
 
 Hvis kun release-opprettelsen feiler etter vellykket push, kan den fullføres uten ny commit/tag:
 
 ```bash
 cd "$HOME/Documents/HomeAssistant/ki-varslinger"
-gh release create v2.0.1 "$HOME/Downloads/ki-varslinger-2.0.1.zip" \
+gh release create v2.3.0 "$HOME/Downloads/ki-varslinger-2.3.0.zip" \
   --repo SebastianKristo/ki-varslinger --verify-tag \
-  --title "KI Varslinger og sikkerhet 2.0.1" --notes-file RELEASE.md
+  --title "KI Varslinger og sikkerhet 2.3.0" --notes-file RELEASE.md
 ```
 
 Sjekk om releasen allerede finnes før du kjører gjenopprettingskommandoen. Ved manglende Git-identitet må `git config user.name` og `git config user.email` settes til dine egne verdier.
@@ -142,3 +142,21 @@ En nedtelling som allerede kjører, beholdes. Åpning, ukjent dørverdi eller av
 | Låsen er låst | Låsen rapporterer locked | Låsen rapporterer unlocked | Låsen mangler, er utilgjengelig eller har en mellom-/feiltilstand |
 
 Home Assistant viser disse som På/Av (råtilstand on/off); attributtet `tolket_verdi` er true/false eller null. `kilde` og `raverdi` viser hva integrasjonen leser. Verdiene oppdateres også når automatikkbryteren er av. Åpne og lukk døren fysisk for å kontrollere at visningen følger riktig vei. Gjenkjent verdi bekrefter samsvar med oppsettet, ikke at sensoren er fysisk korrekt eller koblet til riktig dør.
+
+## Ansiktsgjenkjenning – sperre etter at døren lukkes (2.3.0)
+
+Åpne **Alternativer** på ansiktsgjenkjenningsoppsettet. Tre nye felt er lagt til, og eksisterende oppsett trenger ikke opprettes på nytt.
+
+| Innstilling | Forslag |
+| --- | --- |
+| Sensor for åpen/lukket dør (valgfritt) | `sensor.inngangsdor` |
+| Åpen/lukket sensorverdi | Nøyaktige råverdier fra Utviklerverktøy → Tilstander |
+| Sperretid etter at døren lukkes | 60 sekunder, `0` slår sperren av |
+
+Når du går ut og lukker døren, regner integrasjonen den registrerte overgangen fra åpen til lukket som «noen forlot huset nettopp». Webhooks som kommer inn i sperretiden avvises med HTTP 409 og en forklaring i svaret; ingen `lock.unlock` sendes, og **Sist låst opp av** endres ikke. Et kall mens døren fortsatt rapporterer åpen avvises på samme måte.
+
+Velg en sperretid som er lengre enn ventetiden i Autolås. Med autolås på 30 sekunder rekker kameraet ellers å utløse en ny opplåsing like etter at døren låste seg bak deg.
+
+Sperren starter bare ved en faktisk åpen → lukket-overgang, som i Autolås. Åpning av døren nullstiller den, og en ukjent eller utilgjengelig dørverdi sperrer ikke – da låser webhooken opp som før. Uten valgt dørsensor er oppførselen uendret fra 2.2.0. Sperren ligger i minnet og gjelder ikke etter omstart eller reload av integrasjonen.
+
+**Sikkerhetsstatus** viser **Sperret etter lukking** mens sperren gjelder, med attributtene `dorsperre_sekunder`, `dorsperre_igjen`, `dorverdi` og `siste_forsok`. Webhook-ID-er og låsekode inngår ikke i attributtene.

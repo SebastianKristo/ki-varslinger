@@ -1,10 +1,10 @@
-# Testresultat – KI Varslinger og sikkerhet 2.2.0
+# Testresultat – KI Varslinger og sikkerhet 2.3.0
 
 Testet 15. september 2026 med Python 3.13.15 og Home Assistant Core 2025.12.5 i et isolert lokalt miljø.
 
 ## Funksjonstester
 
-74 tester bestått. Testene bruker Home Assistants egne State-, Event-, Store- og tjenesteregisterklasser. Notify- og vacuum-handlingene er simulerte og kontakter ingen telefon eller robot.
+78 tester bestått. Testene bruker Home Assistants egne State-, Event-, Store- og tjenesteregisterklasser. Notify- og vacuum-handlingene er simulerte og kontakter ingen telefon eller robot.
 
 Dekker: skjemaer, opprettelse av konfigurasjonsoppføring, validering av mottakere, fjerning av valgfrie kilder, opprettelse av plattformentiteter, faktiske tilstandslyttere og avregistrering, familieordlyd/lyd, uavhengige brytere, lagring, sonefilter, alarmforløp, kritisk alarm kontra test, Homey-alarm, uavhengig sending ved mottakerfeil, samme støvsugervarsel med Pause → Start, umiddelbar Start før robotens tilstand har oppdatert seg, avvisning av gamle knapper, sikre støvsugertester og gyldige transportavganger.
 
@@ -72,3 +72,9 @@ Innlastingstesten oppretter og avlaster også Dørlys med to entiteter (bryter o
 74 tester bestått. Åtte nye tester dekker blinketest med automatikk av, feil ved utilgjengelig lys, oppdatering av avlesning mens automatikk er av, rå true/false-verdier, ukjent kontra false, ikke-aktuerende kontroll, testnedtelling med faktisk simulert lock.lock, bevaring av eksisterende timer, avvisning av ugyldige forutsetninger og avbrudd ved åpning.
 
 Innlastingstesten besto med ni entiteter for Autolås og sju for Dørlys. Tidligere oppgitte entitetsantall gjelder de eldre versjonene. Testene betjener ingen fysisk dør eller lampe. Tester kjørt 15. september 2026 mot Home Assistant 2025.12.5.
+
+## Dørsperre for ansiktsgjenkjenning 2.3.0
+
+Fire nye tester dekker: avvist webhook i sperretiden etter en registrert åpen → lukket-overgang, bekreftet opplåsing igjen når sperretiden er ute, avvisning mens døren rapporterer åpen, nullstilling ved ny åpning, ukjent dørverdi som ikke sperrer, statusteksten «Sperret etter lukking» uten låsekode i attributtene, at den virkelige tilstandslytteren fanger opp dørsensoren, og at oppsett uten dørsensor oppfører seg som i 2.2.0. Validering av åpen/lukket-verdiene i skjemaet er også dekket.
+
+78 tester bestått. De nye testene bruker simulerte `lock.unlock`-handlinger og HAs egen tilstandsmaskin; ingen fysisk dør, lås eller kamera er betjent. Kjøringen her brukte et isolert testmiljø; kjøringen mot Home Assistant 2025.12.5 og innlastingstesten må bekreftes av GitHub Actions etter opplasting.

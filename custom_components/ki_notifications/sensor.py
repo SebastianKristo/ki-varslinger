@@ -24,13 +24,15 @@ class KIStatus(KIEntity, SensorEntity):
             return 'Blinker' if self.runtime.blink_task else 'Klar'
         if self.runtime.kind == 'autolock':
             return self.runtime.autolock_status()
+        if self.runtime.kind == 'face_unlock' and self.runtime.enabled['enabled'] and self.runtime.face_block_reason():
+            return 'Sperret etter lukking'
         if self.runtime.kind in SECURITY_KINDS:
             return 'Aktiv' if self.runtime.enabled['enabled'] else 'Av'
         return 'Sendefeil' if self.runtime.last_error else 'Datakildefeil' if self.runtime.last_source_error else 'Sendt' if self.runtime.last_sent else 'Klar'
     @property
     def extra_state_attributes(self):
         r=self.runtime
-        return {'siste_melding':r.last_message,'siste_sendt':r.last_sent,'siste_feil':r.last_error,'datakildefeil':r.last_source_error,'type':r.kind, 'hovedbryter':r.master_enabled, 'sikkerhetsfeil':r.security_error, **(r.autolock_attributes() if r.kind == 'autolock' else {}), **({'lys':r.cfg['blink_light'], 'siste_blink':r.blink_last_at} if r.kind == 'door_blink' else {})}
+        return {'siste_melding':r.last_message,'siste_sendt':r.last_sent,'siste_feil':r.last_error,'datakildefeil':r.last_source_error,'type':r.kind, 'hovedbryter':r.master_enabled, 'sikkerhetsfeil':r.security_error, **(r.autolock_attributes() if r.kind == 'autolock' else {}), **({'lys':r.cfg['blink_light'], 'siste_blink':r.blink_last_at} if r.kind == 'door_blink' else {}), **(r.face_attributes() if r.kind == 'face_unlock' else {})}
 
 class LastUnlock(KIEntity, SensorEntity):
     def __init__(self,r):

@@ -1,4 +1,4 @@
-# KI Varslinger og sikkerhet 2.2.0
+# KI Varslinger og sikkerhet 2.3.0
 
 En egendefinert Home Assistant-integrasjon for familie, støvsuger, alarm, egne tilstandsendringer og Ruter-varsler. Oppsett og endringer gjøres i brukergrensesnittet. Ingen YAML-pakke eller KI-testskript kreves.
 
@@ -91,13 +91,24 @@ Selve ansiktsgjenkjenningen skjer fortsatt i kameraet/eksisterende system. Integ
 4. Skal gamle ID-er gjenbrukes, deaktiver de gamle webhook-automasjonene og last automasjonene inn på nytt først, slik at ID-ene blir frigitt. Integrasjonen overskriver ikke andres webhook-registreringer.
 5. Sett hvert kamera-/gjenkjenningskall til `http://DIN-HA-ADRESSE:8123/api/webhook/ID_FOR_PERSONEN`, med din faktiske HA-adresse, port og protokoll. ID-en tilhører URL-stien; ikke legg den i et `?`-queryfelt.
 6. Bruk **POST** eller **PUT**. Hvis systemet ditt bare sender GET, slå på **Tillat opplåsing med GET**. **HEAD** er kun en kontroll av endepunktet og låser aldri opp, i motsetning til det gamle YAML-eksemplet der alle metodene var utløsere.
-7. Slå på funksjonsbryteren når endepunktene er konfigurert.
+7. Velg eventuelt dørsensoren og sperretiden under, slik at en webhook ikke låser opp rett etter at du har gått ut.
+8. Slå på funksjonsbryteren når endepunktene er konfigurert.
 
 Webhookene registreres med `local_only: true`. Bruk den lokale HA-adressen. Det er webhook-ID-en og lokalt opphav som gir adgang; integrasjonen validerer ikke selve ansiktsbildet. ID-ene må derfor behandles som adgangsnøkler. De publiseres ikke i repoet eller som sensorattributter. Passordfeltet skjuler dem i skjemaet; HA lagrer konfigurasjonsverdier i `.storage`, så ikke legg HA-konfigurasjon eller sikkerhetskopier i GitHub.
 
 En webhook sender bare opplåsingskommando hvis låsen er bekreftet `locked`. Allerede `unlocked` fører ikke til en ny opplåsing eller en ny personregistrering. Ved ustabil/ukjent låstilstand avvises forsøket. Standard er minst 10 sekunder mellom faktiske forsøk.
 
 Etter kommandoen venter integrasjonen inntil 15 sekunder på `unlocked`. Først da oppdateres sensoren **Sist låst opp av** til **Sebastian**, **Rune** eller **Cybele**, med tidspunkt i attributtet `bekreftet_tid`. Verdien huskes ved omstart. Dette betyr «opplåsing bekreftet etter denne personens webhook»; det er ikke en uavhengig bekreftelse av ansiktsidentiteten. Feil eller manglende bekreftelse registrerer ingen ny person og vises i Sikkerhetsstatus.
+
+#### Sperre rett etter at døren er lukket (2.3.0)
+
+Velger du dørsensoren `sensor.inngangsdor` med riktige råverdier for åpen og lukket, brukes en registrert overgang fra åpen til lukket som tegn på at noen nettopp gikk ut. Webhooks som kommer inn i **Sperretid etter at døren lukkes** (standard 60 sekunder) får HTTP 409 med en forklarende tekst. Det sendes ingen opplåsingskommando, og **Sist låst opp av** endres ikke. Et kall mens døren fortsatt rapporterer åpen avvises på samme måte, siden opplåsing da ikke gir mening.
+
+Sett sperretiden lengre enn ventetiden i Autolås. Ellers rekker kameraet å se ansiktet ditt og utløse ny opplåsing i sekundene etter at autolåsen faktisk låste døren bak deg. `0` slår sperren av; uten valgt dørsensor er oppførselen som før.
+
+Åpning av døren nullstiller sperren umiddelbart. Ukjent eller utilgjengelig dørverdi sperrer ikke, slik at en sensorfeil ikke gjør ansiktsgjenkjenningen ubrukelig – da gjelder de samme reglene som i 2.2.0. Sperren lagres ikke; etter omstart eller reload må døren åpnes og lukkes på nytt før den gjelder igjen.
+
+**Sikkerhetsstatus** viser **Sperret etter lukking** mens den gjelder. Attributtene `dorsperre_sekunder`, `dorsperre_igjen`, `dorsensor`, `dorverdi`, `siste_forsok` og `siste_forsok_tid` forklarer hvorfor et forsøk ble avvist. Verken webhook-ID eller låsekode legges i attributtene.
 
 Ingen fysisk opplåsing foretas under de medfølgende automatiske testene. Prøv oppsettet på ditt utstyr etter at de gamle automasjonene er deaktivert.
 
