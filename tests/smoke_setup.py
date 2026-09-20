@@ -35,7 +35,7 @@ async def main():
   for kind, settings, expected_count in [
    ('door_blink',{'entity':'lock.front','door_entity':'sensor.door','door_open':'open','door_closed':'closed','blink_light':'light.pultskjermer','blink_count':3,'blink_interval':0.5,'unlock_window':60},7),
    ('autolock',{'entity':'lock.front','door_entity':'sensor.door','door_open':'open','door_closed':'closed','autolock_delay':30},9),
-   ('face_unlock',{'entity':'lock.front','door_entity':'sensor.door','door_open':'open','door_closed':'closed','door_block':60,**{'webhook_'+p:'smoke_only_'+p+'_xxxxxxxxxxxxxxxxxxxx' for p in ['rune','cybele','sebastian']}},3),
+   ('face_unlock',{'entity':'lock.front',**{'webhook_'+p:'smoke_only_'+p+'_xxxxxxxxxxxxxxxxxxxx' for p in ['rune','cybele','sebastian']}},3),
   ]:
    extra=config_entries.ConfigEntry(version=1,minor_version=1,domain='ki_notifications',title=kind,data={'kind':kind,'name':kind,**settings},options={},source='user',unique_id=None,discovery_keys={},subentries_data=[])
    await h.config_entries.async_add(extra)

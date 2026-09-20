@@ -136,29 +136,6 @@ class Integration(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(self.sent),2)
         self.assertEqual(self.sent[0][1]['message'],'Rune forlot huset.')
         self.assertEqual(self.sent[0][1]['data']['push']['sound'],'forlot_huset.wav')
-    async def test_family_site_title_override_and_server_name(self):
-        r=self.runtime('family',site_title=True,site_name='Toten')
-        await self.change(r,'switch.cybele','on','off')
-        self.assertEqual(self.sent[0][1]['title'],'Toten')
-        self.assertEqual(self.sent[0][1]['message'],'Cybele forlot huset.')
-        self.hass.config.location_name='Strömstad'
-        server=self.runtime('family',site_title=True)
-        await self.change(server,'switch.rune','off','on')
-        self.assertEqual(self.sent[-1][1]['title'],'Strömstad')
-        self.assertEqual(self.sent[-1][1]['message'],'Rune kom hjem.')
-        await server.test('away')
-        self.assertEqual(self.sent[-1][1]['title'],'Strömstad')
-        self.assertEqual(self.sent[-1][1]['message'],'Test forlot huset.')
-    async def test_family_titles_unchanged_without_site_name(self):
-        r=self.runtime('family')
-        await self.change(r,'switch.rune','on','off')
-        self.assertEqual(self.sent[0][1]['title'],'🚶 Forlot huset')
-        await self.change(r,'switch.rune','off','on')
-        self.assertEqual(self.sent[-1][1]['title'],'🏠 Kom hjem')
-        self.hass.config.location_name=''
-        blank=self.runtime('family',site_title=True)
-        await self.change(blank,'switch.cybele','off','on')
-        self.assertEqual(self.sent[-1][1]['title'],'🏠 Kom hjem')
     async def test_independent_flags_and_test_bypass(self):
         r=self.runtime('family');r.enabled['rune_home']=False
         await self.change(r,'switch.rune','off','on')

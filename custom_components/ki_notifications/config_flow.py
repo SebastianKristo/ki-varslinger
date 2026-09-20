@@ -4,7 +4,8 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers import selector
-from .const import DOMAIN, KINDS, PEOPLE, SECURITY_KINDS
+from .const import (DOMAIN, KINDS, PEOPLE, SECURITY_KINDS,
+                    WEATHER_ICON, WEATHER_PROMPT, WEATHER_TITLE)
 
 
 def schema(hass, kind, saved):
@@ -32,8 +33,6 @@ def schema(hass, kind, saved):
         for p in PEOPLE:
             known = f'switch.{p}_posisjon_hjemme_borte'
             add(p, entity(['switch', 'input_boolean', 'binary_sensor']), known if hass.states.get(known) else None)
-        add('site_title', selector.BooleanSelector(), False)
-        add('site_name', text, required=False)
     elif kind == 'vacuum':
         known = 'vacuum.sir_sweeps_a_lot'
         add('entity', entity(['vacuum']), known if hass.states.get(known) else None)
@@ -92,11 +91,6 @@ def schema(hass, kind, saved):
             add('webhook_'+person, selector.TextSelector(selector.TextSelectorConfig(type='password')), secrets.token_urlsafe(32))
         add('allow_get', selector.BooleanSelector(), False)
         add('face_cooldown', selector.NumberSelector(selector.NumberSelectorConfig(min=1,max=120,mode='box',unit_of_measurement='s')), 10)
-        known = 'sensor.inngangsdor'
-        add('door_entity', entity(['sensor','binary_sensor']), known if hass.states.get(known) else None, False)
-        add('door_open', text, 'open')
-        add('door_closed', text, 'closed')
-        add('door_block', selector.NumberSelector(selector.NumberSelectorConfig(min=0,max=900,step=1,mode='box',unit_of_measurement='s')), 60)
     elif kind == 'weather_ai':
         known = 'weather.forecast_home'
         add('weather_entity', entity(['weather']), known if hass.states.get(known) else None)
@@ -106,6 +100,12 @@ def schema(hass, kind, saved):
         add('home_entity', entity(['switch','input_boolean','binary_sensor','person','device_tracker']), known if hass.states.get(known) else None)
         add('home_state', text, 'on')
         add('ai_entity', entity(['ai_task']), required=False)
+        # Tittel, ikon og selve prompten var hardkodet. Standardene her er nøyaktig det
+        # som sto i koden, så et eksisterende oppsett ser likt ut etter oppdateringen.
+        add('title', text, WEATHER_TITLE, required=False)
+        add('icon', text, WEATHER_ICON, required=False)
+        add('prompt', selector.TextSelector(selector.TextSelectorConfig(multiline=True)),
+            WEATHER_PROMPT, required=False)
     elif kind == 'ha_start':
         add('startup_delay', selector.NumberSelector(selector.NumberSelectorConfig(min=0,max=300,mode='box',unit_of_measurement='s')), 15)
     elif kind == 'lock_jammed':
@@ -149,8 +149,6 @@ def errors(hass, kind, data, entry_id=None):
         if values[0] == values[1] or (source and any(v not in source.attributes.get('options',[]) for v in values)):
             return {'base': 'invalid_homey_options'}
     if kind == 'face_unlock':
-        if data.get('door_entity') and (data.get('door_open') == data.get('door_closed') or any(v in [None,'unknown','unavailable',''] for v in [data.get('door_open'), data.get('door_closed')])):
-            return {'base': 'invalid_door_states'}
         ids = [data['webhook_'+p] for p in PEOPLE]
         if len(set(ids)) != 3 or any(len(x)<16 or any(ch in x for ch in '/?#') for x in ids):
             return {'base': 'invalid_webhooks'}
