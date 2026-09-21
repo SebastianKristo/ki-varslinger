@@ -12,6 +12,7 @@ from homeassistant.util import dt as dt_util
 from homeassistant.components.zone import in_zone
 from .security import Security
 from .door_blink import DoorBlink
+from .door_camera import DoorCamera
 from .extra_notifications import ExtraNotifications
 from .const import DOMAIN, PEOPLE, INVALID, flags, SECURITY_KINDS
 from .logic import alarm_event, presence_event, vacuum_actions, minutes, choose_departure
@@ -49,7 +50,7 @@ async def async_unload_entry(hass, entry):
 async def async_remove_entry(hass, entry):
     await Store(hass, 1, f'{DOMAIN}.{entry.entry_id}').async_remove()
 
-class Runtime(ExtraNotifications, Security, DoorBlink):
+class Runtime(ExtraNotifications, Security, DoorBlink, DoorCamera):
     def __init__(self, hass, entry):
         self.hass, self.entry = hass, entry
         self.cfg = dict(entry.options or entry.data)
@@ -74,6 +75,7 @@ class Runtime(ExtraNotifications, Security, DoorBlink):
         self.jam_generation = 0
         self.security_init()
         self.blink_init()
+        self.door_camera_init()
         self.last_test_result = 'Ikke testet'
         self.last_test_at = None
 
@@ -85,6 +87,8 @@ class Runtime(ExtraNotifications, Security, DoorBlink):
                     old = self.hass.states.get(f'input_boolean.posisjonsvarsel_{person}_{old_key}')
                     if old and old.state in {'on','off'}:
                         self.enabled[f'{person}_{key}'] = old.state == 'on'
+        if not saved and self.kind == 'door_camera':
+            self.enabled['closed'] = False
         self.enabled.update({k:bool(v) for k,v in saved.get('enabled',{}).items() if k in self.enabled})
         self.master_enabled = bool(saved.get('master_enabled', True))
         self.last_weather_date = saved.get('last_weather_date')
@@ -146,6 +150,8 @@ class Runtime(ExtraNotifications, Security, DoorBlink):
         if self.kind == 'door_blink':
             entities.append(c['door_entity'])
             self.unsubs.append(self.hass.bus.async_listen_once('homeassistant_stop', self.blink_finish))
+        if self.kind == 'door_camera' and c.get('door_entity'):
+            entities.append(c['door_entity'])
         if self.kind == 'alarm_sync':
             entities.append(c['homey_select'])
         if self.kind == 'alarm' and c.get('triggered_sensor'):
@@ -167,6 +173,7 @@ class Runtime(ExtraNotifications, Security, DoorBlink):
         self.extra_close()
         self.security_close()
         self.blink_close()
+        self.door_camera_close()
         self.token = secrets.token_hex(16)
         for unsub in self.unsubs:
             unsub()
@@ -201,6 +208,10 @@ class Runtime(ExtraNotifications, Security, DoorBlink):
                 return
             if self.kind == 'lock_jammed':
                 await self.jam_changed(old, new)
+                return
+            if self.kind == 'door_camera':
+                if self.master_enabled:
+                    await self.door_camera_changed(old, new, event.data.get('entity_id'))
                 return
             if old is None or new is None or old.state in INVALID or new.state in INVALID:
                 return
@@ -249,13 +260,17 @@ class Runtime(ExtraNotifications, Security, DoorBlink):
                     if not c.get('zones') or self.inside(self.hass.states.get(c.get('zone_person'))):
                         await self.send(c['name'], c['message'], c['icon'])
 
-    async def send(self, title, message, icon='mdi:bell-ring-outline', *, away=False, critical=False, tag=None, actions=None, quiet=False, test=False):
+    async def send(self, title, message, icon='mdi:bell-ring-outline', *, away=False, critical=False, tag=None, actions=None, quiet=False, test=False, extra=None, ios_extra=None):
         if self.closed or (len(flags(self.kind)) > 1 and not self.master_enabled and not test):
             return
         c = self.cfg
         base = {'notification_icon':icon}
         if tag:
             base['tag'] = tag
+        # Tillegg som bilde gjelder begge plattformer; ios_extra (f.eks. entity_id for
+        # direkte kamera ved langt trykk) bare iPhone.
+        if extra:
+            base.update(extra)
         sound = c.get('sound_away' if away else 'sound', 'default') or 'default'
         async def one(target, ios):
             payload = deepcopy(base)
@@ -265,6 +280,8 @@ class Runtime(ExtraNotifications, Security, DoorBlink):
                     payload['push'] = {'sound':{'name':sound, 'critical':1, 'volume':1.0}, 'interruption-level':'critical'}
                 if actions is not None:
                     payload['actions'] = actions
+                if ios_extra:
+                    payload.update(ios_extra)
             else:
                 payload.update({'channel': f"{c.get('channel','KI Varsler')} – {'stille oppdateringer' if quiet else 'avreise' if away else 'varsler'}", 'importance':'low' if quiet else 'high', 'priority':'high', 'ttl':0})
                 if tag:
@@ -420,5 +437,7 @@ class Runtime(ExtraNotifications, Security, DoorBlink):
                 await self.startup_notice(test=True)
             elif self.kind == 'lock_jammed':
                 await self.jam_notice(test=True)
+            elif self.kind == 'door_camera':
+                await self.door_schedule('unlocked', test=True)
             else:
                 await self.send('🔔 Test – '+self.cfg['name'], self.cfg['message'], self.cfg['icon'], test=True)

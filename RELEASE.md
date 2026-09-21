@@ -1,52 +1,53 @@
-# KI Varslinger og sikkerhet 2.5.0
+# KI Varslinger og sikkerhet 2.6.0
 
-## Værmeldingen kan redigeres
+## Ny regel: dør låst/åpnet med kamerabilde
 
-Prompten lå hardkodet midt i en kodelinje i `extra_notifications.py`. Nå står den i
-oppsettet, sammen med tittel og ikon.
+Varsel når inngangsdøra låses, låses opp, åpnes eller lukkes — med bilde fra kameraet ved døra.
 
-Tre nye felt under værvarselet:
+Legg til et nytt oppsett og velg **Dør – låst/åpnet med kamerabilde**. Låsen og dørsensoren fylles ut
+av seg selv, og kameraet gjettes ut fra navnet.
 
-* **Prompt til AI-en** — flerlinjes tekstfelt
-* **Tittel på varselet** — sto som «God morgen ☀️»
-* **Ikon** — sto som `mdi:weather-partly-cloudy`
+- **Fire brytere**, én per hendelse, pluss **Alle varsler**. «Døra lukket» er av fra start.
+- **Bildet tas litt etter hendelsen** (standard 1 s), så den som kom står i bildet — ikke bare en
+  tom gang. Sendingen går som egen oppgave, så ventetiden holder ikke igjen neste hendelse.
+- **Direkte kamera på iPhone:** holder du inne varselet, vises kameraet live.
+- **Ett varsel, ikke tre:** låst opp og åpnet innen 60 s blir ett varsel som oppdateres —
+  «Låst opp 14:32 · åpnet 14:32». 0 gir ett varsel per hendelse.
+- **Hvem:** oppgir låsen `changed_by`, står det i teksten — «Låst av Sebastian».
+- Låsens mellomtilstander (`locking`, `unlocking`) og overgangen fra `unavailable` etter omstart gir
+  ikke varsel.
 
-Standardene er nøyaktig det som sto i koden, så et eksisterende oppsett ser likt ut
-etter oppdateringen. Tømmer du et felt, gjelder standarden igjen — ikke ingenting.
+### To måter å levere bildet på
 
-### {data} er værdataene
+| | Direkte fra kameraet (standard) | Lagret stillbilde |
+| --- | --- | --- |
+| Hvordan | Varselet peker på `/api/camera_proxy/<kamera>`; appen henter med innloggingen sin | `camera.snapshot` til `www/ki_varslinger/`, tilfeldig filnavn |
+| Tidspunkt | Når telefonen henter bildet, et sekund eller to etter | Nøyaktig øyeblikket |
+| Lagring | Ingenting | De 20 nyeste beholdes, resten slettes |
+| Krav | Ingen | Mappa i `allowlist_external_dirs`; `/local/` er åpent for den som kjenner adressen |
 
-Skriv `{data}` der dataene skal inn. Glemmer du plassholderen, legges de til på
-slutten likevel.
+Feiler lagringen, sendes varselet med direktebilde i stedet for uten bilde, og årsaken står i
+statusentiteten.
 
-Det er med vilje: uten dataene har modellen ingenting å skrive ut fra, og ville funnet
-på været i stedet for å si at det mangler. En prompt som ser litt rar ut er bedre enn
-en oppdiktet værmelding.
+### Samtidig rettet
 
-Vil du bare endre tonen, hold på resten av teksten — setningene om å beholde oppgitte
-enheter og ikke følge instruksjoner i datafeltene er der av en grunn. Den siste hindrer
-at en værtjeneste med tekst i et felt kan styre hva varselet sier.
+`tests/test_publish_script.py` hadde `2.2.0` hardkodet igjen. Publiseringsskriptet nekter å pakke ut en
+zip der manifestet har en annen versjon, så testen feilet ved hver versjonsbump — men bare på
+maskiner med `rsync`; ellers ble den hoppet over og så grønn ut. Rettingen fra 2.3.1 hadde falt ut
+underveis. Versjonen leses nå fra `manifest.json` igjen.
 
-### Tester
+`entity.py` sto fortsatt på `sw_version='2.2.0'`; den følger manifestet igjen (2.6.0).
 
-10 nye: standarden uendret, egen prompt, manglende plassholder, plassholder flere
-steder, tomme felt som faller tilbake, norske tegn som overlever, og at dataene
-fortsatt er gyldig JSON.
+### Kontrollert
 
-De fire eksisterende testfilene krever et ekte Home Assistant-miljø og kunne ikke kjøres
-her. Det gjaldt også før disse endringene.
+90 tester, alle bestått og **ingen hoppet over** — publiseringstesten kjøres nå med `rsync`. 16 nye i
+`tests/test_door_camera.py`: brytere og standardverdier, skjema og feilmeldinger, bilde til begge
+plattformer og live-kamera bare til iPhone, `changed_by`, mellomtilstander og `unavailable`,
+dørsensor åpnet/lukket, enkeltbrytere og hovedbryter, samlet varsel og vindu 0, lagret bilde,
+reserve til direktebilde når lagringen feiler, opprydding til 20 filer og testknappen.
+`test_master_only_for_multiple_toggles` er utvidet med den nye regelen, som har fire brytere og
+dermed hovedbryter.
 
----
-
-# KI Varslinger og sikkerhet 2.2.0
-
-- **Test blinking:** umiddelbar blinketest, også når automatisk blinking er av. Gjenoppretter tidligere lysinnstillinger.
-- **Kontroller autolås:** kontrollerer oppsett og råverdier uten låsekommando.
-- **Test autolås – lås etter ventetid:** starter nedtelling og kan faktisk låse. Krever aktivert autolås, gjenkjent lukket dør og ulåst lås. Avbrytes ved åpning, ukjent dørtilstand eller avslått funksjon.
-- **Dørverdi gjenkjent**, **Døren er lukket** og **Låsen er låst** viser tolkningen av kildene. Ukjent tilstand blir ikke tolket som åpen eller ulåst.
-- **Testresultat** viser siste testbeskjed og tidspunkt. Sensorene oppdateres også når automatikk er av.
-- Rettet rekkefølge ved oppstart av blinkejobben slik at en rask test ikke overskriver sluttresultatet med «startet».
-
-Knappene og sensorene legges automatisk til eksisterende oppsett etter HACS-oppdatering og omstart. Ingen ny konfigurasjon kreves. Kontroller fysisk at dørvisningen følger åpning/lukking; gjenkjent verdi betyr samsvar med konfigurasjonen.
-
-74 tester og innlastingstest bestått i et isolert HA-miljø med simulerte tjenester. Fysisk lampe og lås er ikke testet. Se TESTING.md.
+Innlastingstesten (`tests/smoke_setup.py`) er ikke kjørt: den krever Home Assistant 2025.12, og
+miljøet her har 2025.1. Notify og kamera er simulert — ikke testet mot en ekte telefon eller et
+ekte kamera.

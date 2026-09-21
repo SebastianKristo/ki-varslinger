@@ -71,7 +71,12 @@
           "blink_light": "Lys som skal blinke",
           "blink_count": "Antall blink",
           "blink_interval": "Varighet per av/på-trinn (sekunder)",
-          "unlock_window": "Maks tid fra opplåsing til åpning (sekunder)"
+          "unlock_window": "Maks tid fra opplåsing til åpning (sekunder)",
+          "camera": "Kamera ved døra",
+          "image_mode": "Bilde i varselet",
+          "image_delay": "Vent før bildet tas",
+          "group_seconds": "Samle hendelser i ett varsel innenfor",
+          "live_ios": "Direkte kamera ved langt trykk (iPhone)"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",
@@ -79,7 +84,11 @@
           "delay_helper": "Hvis valgt, bestemmer denne helperen ventetiden i sekunder og overstyrer ventetidsfeltet.",
           "autolock_delay": "5–3600 sekunder fra åpen → lukket. Funksjonsbryteren Autolås må være på. En ny verdi her erstatter tidligere lagret ventetid.",
           "blink_light": "Tidligere lysstyrke, farge og av/på-tilstand gjenopprettes etter blinkingen.",
-          "unlock_window": "Blinker én gang per opplåsing, når døren deretter åpnes innen denne tiden. Funksjonsbryteren må være på."
+          "unlock_window": "Blinker én gang per opplåsing, når døren deretter åpnes innen denne tiden. Funksjonsbryteren må være på.",
+          "image_mode": "Direkte: appen henter bildet med innloggingen sin, ingenting lagres. Lagret: et stillbilde fra øyeblikket legges i www/ki_varslinger og krever at mappa står i allowlist_external_dirs.",
+          "image_delay": "Så den som kom står i bildet, ikke bare en tom gang.",
+          "group_seconds": "Låst opp og åpnet like etter hverandre blir ett varsel som oppdateres. 0 gir ett varsel per hendelse.",
+          "door_entity": "Valgfri. Uten dørsensor varsles bare låst og låst opp."
         }
       }
     },
@@ -94,7 +103,8 @@
       "invalid_door_states": "Åpen og lukket må ha ulike gyldige sensorverdier.",
       "invalid_homey_options": "Heimdall-alternativene må være ulike og finnes i select-entiteten.",
       "invalid_webhooks": "Velg tre ulike webhook-ID-er på minst 16 tegn, uten /, ? eller #.",
-      "webhook_in_use": "En webhook-ID er allerede i bruk. Deaktiver gammel automasjon eller velg en ny ID."
+      "webhook_in_use": "En webhook-ID er allerede i bruk. Deaktiver gammel automasjon eller velg en ny ID.",
+      "missing_camera": "Velg kameraet ved døra."
     }
   },
   "options": {
@@ -161,7 +171,12 @@
           "blink_light": "Lys som skal blinke",
           "blink_count": "Antall blink",
           "blink_interval": "Varighet per av/på-trinn (sekunder)",
-          "unlock_window": "Maks tid fra opplåsing til åpning (sekunder)"
+          "unlock_window": "Maks tid fra opplåsing til åpning (sekunder)",
+          "camera": "Kamera ved døra",
+          "image_mode": "Bilde i varselet",
+          "image_delay": "Vent før bildet tas",
+          "group_seconds": "Samle hendelser i ett varsel innenfor",
+          "live_ios": "Direkte kamera ved langt trykk (iPhone)"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",
@@ -169,7 +184,11 @@
           "delay_helper": "Hvis valgt, bestemmer denne helperen ventetiden i sekunder og overstyrer ventetidsfeltet.",
           "autolock_delay": "5–3600 sekunder fra åpen → lukket. Funksjonsbryteren Autolås må være på. En ny verdi her erstatter tidligere lagret ventetid.",
           "blink_light": "Tidligere lysstyrke, farge og av/på-tilstand gjenopprettes etter blinkingen.",
-          "unlock_window": "Blinker én gang per opplåsing, når døren deretter åpnes innen denne tiden. Funksjonsbryteren må være på."
+          "unlock_window": "Blinker én gang per opplåsing, når døren deretter åpnes innen denne tiden. Funksjonsbryteren må være på.",
+          "image_mode": "Direkte: appen henter bildet med innloggingen sin, ingenting lagres. Lagret: et stillbilde fra øyeblikket legges i www/ki_varslinger og krever at mappa står i allowlist_external_dirs.",
+          "image_delay": "Så den som kom står i bildet, ikke bare en tom gang.",
+          "group_seconds": "Låst opp og åpnet like etter hverandre blir ett varsel som oppdateres. 0 gir ett varsel per hendelse.",
+          "door_entity": "Valgfri. Uten dørsensor varsles bare låst og låst opp."
         }
       }
     },
@@ -184,7 +203,8 @@
       "invalid_door_states": "Åpen og lukket må ha ulike gyldige sensorverdier.",
       "invalid_homey_options": "Heimdall-alternativene må være ulike og finnes i select-entiteten.",
       "invalid_webhooks": "Velg tre ulike webhook-ID-er på minst 16 tegn, uten /, ? eller #.",
-      "webhook_in_use": "En webhook-ID er allerede i bruk. Deaktiver gammel automasjon eller velg en ny ID."
+      "webhook_in_use": "En webhook-ID er allerede i bruk. Deaktiver gammel automasjon eller velg en ny ID.",
+      "missing_camera": "Velg kameraet ved døra."
     }
   }
 }

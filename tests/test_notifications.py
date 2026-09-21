@@ -126,7 +126,8 @@ class Integration(unittest.IsolatedAsyncioTestCase):
             entities=[]
             await switch.async_setup_entry(self.hass,r.entry,entities.extend)
             masters=[e for e in entities if e.key=='master']
-            self.assertEqual(len(masters),1 if kind in {'family','alarm'} else 0)
+            # Hovedbryter bare der det finnes flere enkeltbrytere: familie, alarm og dørvarselet.
+            self.assertEqual(len(masters),1 if kind in {'family','alarm','door_camera'} else 0)
     async def test_reject_invalid_recipients(self):
         self.assertEqual(errors(self.hass,'alarm',{}),{'base':'no_targets'})
         self.assertEqual(errors(self.hass,'alarm',{'ios_targets':['missing']}),{'base':'missing_service'})

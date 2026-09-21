@@ -9,6 +9,7 @@ Integrasjon for varslinger og sikkerhet i Home Assistant med oppsett i brukergre
 
 | Oppsett | Funksjoner |
 | --- | --- |
+| Dør med kamerabilde | Varsel når døra låses, låses opp, åpnes eller lukkes – med bilde fra kameraet og direkte kamera ved langt trykk på iPhone. |
 | Dørlys | Blinker pultskjermene etter opplåsing og åpning, med gjenoppretting. |
 | Autolås | Låser etter bekreftet lukking. Tallfelt for sekunder, eller eksisterende input_number. |
 | Heimdall ↔ Alarmo | Toveis armering/deaktivering og kameraenes privacy mode. |
@@ -122,6 +123,40 @@ Slå på den nye funksjonsbryteren. Lås opp mens døren er lukket, og åpne den
 Lyset blinker tre ganger og går tilbake til rapportert tidligere av/på, lysstyrke og farge. Hvis lyset er en HA-gruppe med medlemsliste, gjenopprettes medlemmenes individuelle tilstander. Ingen blink køes mens en sekvens kjører. Avslått bryter stopper sekvensen og forsøker å gjenopprette lyset.
 
 Status viser **Av**, **Klar**, **Blinker** eller **Sikkerhetsfeil**. Attributtet `siste_blink` viser siste fullførte sekvens i denne kjøretiden. Gjenoppretting krever at lyset fortsatt er tilgjengelig og HA kjører; strømbrudd kan avbryte prosessen. Andre automasjoner eller manuelle lysendringer under blinkingen kan bli overskrevet når den lagrede tilstanden gjenopprettes.
+
+## Dør – låst/åpnet med kamerabilde (2.6.0)
+
+Legg til et nytt oppsett i **KI Varslinger og sikkerhet**, og velg **Dør – låst/åpnet med kamerabilde**.
+
+| Innstilling | Forslag |
+| --- | --- |
+| Lås | `lock.dorlas_blatann` |
+| Dørsensor | `sensor.inngangsdor` – valgfri; uten den varsles bare låst og låst opp |
+| Åpen/lukket sensorverdi | Nøyaktige råverdier fra Utviklerverktøy → Tilstander |
+| Kamera ved døra | Gjettes ut fra navnet; velg selv om det står feil |
+| Bilde i varselet | **Direkte fra kameraet** |
+| Vent før bildet tas | 1 sekund |
+| Samle hendelser innenfor | 60 sekunder |
+| Direkte kamera ved langt trykk (iPhone) | På |
+
+Enheten får én bryter per hendelse — **Døra låst**, **Døra låst opp**, **Døra åpnet** og **Døra lukket** —
+pluss **Alle varsler**. «Lukket» er av fra start; det er sjelden man vil ha et bilde av at døra ble
+lukket.
+
+**Bildet.** Med *Direkte fra kameraet* peker varselet på `/api/camera_proxy/<kamera>`, og appen henter
+bildet med innloggingen sin. Ingenting lagres, og ingenting blir liggende åpent. Bildet er det
+kameraet ser når telefonen henter det, i praksis et sekund eller to etter hendelsen.
+*Lagret stillbilde* tar bildet i selve øyeblikket med `camera.snapshot` og legger det i
+`www/ki_varslinger/` med et tilfeldig navn — de 20 nyeste beholdes. Det krever at mappa står i
+`allowlist_external_dirs`, og `/local/` er åpent for alle som kjenner adressen. Feiler lagringen,
+sendes varselet med direktebilde i stedet, og feilen står i statusentiteten.
+
+**Samlet varsel.** Låses døra opp og åpnes like etter, blir det ett varsel som oppdateres —
+«Låst opp 14:32 · åpnet 14:32» — ikke to varsler med to bilder. Settes vinduet til 0, kommer hver
+hendelse for seg.
+
+Mellomtilstandene til låsen (`locking`, `unlocking`) gir ikke varsel, og heller ikke overgangen fra
+`unavailable` etter en omstart. Oppgir låsen `changed_by`, står det i varselet: «Låst av Sebastian».
 
 ## Testknapper og døravlesning (2.2.0)
 

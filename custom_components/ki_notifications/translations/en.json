@@ -73,7 +73,12 @@
           "blink_interval": "Varighet per av/på-trinn (sekunder)",
           "unlock_window": "Maks tid fra opplåsing til åpning (sekunder)",
           "prompt": "Prompt til AI-en ({data} = værdataene)",
-          "title": "Tittel på varselet"
+          "title": "Tittel på varselet",
+          "camera": "Camera at the door",
+          "image_mode": "Image in the notification",
+          "image_delay": "Wait before taking the image",
+          "group_seconds": "Group events into one notification within",
+          "live_ios": "Live camera on long press (iPhone)"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",
@@ -81,7 +86,11 @@
           "delay_helper": "Hvis valgt, bestemmer denne helperen ventetiden i sekunder og overstyrer ventetidsfeltet.",
           "autolock_delay": "5–3600 sekunder fra åpen → lukket. Funksjonsbryteren Autolås må være på. En ny verdi her erstatter tidligere lagret ventetid.",
           "blink_light": "Tidligere lysstyrke, farge og av/på-tilstand gjenopprettes etter blinkingen.",
-          "unlock_window": "Blinker én gang per opplåsing, når døren deretter åpnes innen denne tiden. Funksjonsbryteren må være på."
+          "unlock_window": "Blinker én gang per opplåsing, når døren deretter åpnes innen denne tiden. Funksjonsbryteren må være på.",
+          "image_mode": "Direct: the app fetches the image with its own login, nothing is stored. Saved: a still from the moment goes to www/ki_varslinger and requires the folder in allowlist_external_dirs.",
+          "image_delay": "So whoever arrived is in the picture, not just an empty hallway.",
+          "group_seconds": "Unlocked and opened shortly after each other becomes one updating notification. 0 sends one per event.",
+          "door_entity": "Optional. Without a door sensor only locked and unlocked are notified."
         }
       }
     },
@@ -96,7 +105,8 @@
       "invalid_door_states": "Åpen og lukket må ha ulike gyldige sensorverdier.",
       "invalid_homey_options": "Heimdall-alternativene må være ulike og finnes i select-entiteten.",
       "invalid_webhooks": "Velg tre ulike webhook-ID-er på minst 16 tegn, uten /, ? eller #.",
-      "webhook_in_use": "En webhook-ID er allerede i bruk. Deaktiver gammel automasjon eller velg en ny ID."
+      "webhook_in_use": "En webhook-ID er allerede i bruk. Deaktiver gammel automasjon eller velg en ny ID.",
+      "missing_camera": "Choose the camera at the door."
     }
   },
   "options": {
@@ -165,7 +175,12 @@
           "blink_interval": "Varighet per av/på-trinn (sekunder)",
           "unlock_window": "Maks tid fra opplåsing til åpning (sekunder)",
           "prompt": "Prompt til AI-en ({data} = værdataene)",
-          "title": "Tittel på varselet"
+          "title": "Tittel på varselet",
+          "camera": "Camera at the door",
+          "image_mode": "Image in the notification",
+          "image_delay": "Wait before taking the image",
+          "group_seconds": "Group events into one notification within",
+          "live_ios": "Live camera on long press (iPhone)"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",
@@ -173,7 +188,11 @@
           "delay_helper": "Hvis valgt, bestemmer denne helperen ventetiden i sekunder og overstyrer ventetidsfeltet.",
           "autolock_delay": "5–3600 sekunder fra åpen → lukket. Funksjonsbryteren Autolås må være på. En ny verdi her erstatter tidligere lagret ventetid.",
           "blink_light": "Tidligere lysstyrke, farge og av/på-tilstand gjenopprettes etter blinkingen.",
-          "unlock_window": "Blinker én gang per opplåsing, når døren deretter åpnes innen denne tiden. Funksjonsbryteren må være på."
+          "unlock_window": "Blinker én gang per opplåsing, når døren deretter åpnes innen denne tiden. Funksjonsbryteren må være på.",
+          "image_mode": "Direct: the app fetches the image with its own login, nothing is stored. Saved: a still from the moment goes to www/ki_varslinger and requires the folder in allowlist_external_dirs.",
+          "image_delay": "So whoever arrived is in the picture, not just an empty hallway.",
+          "group_seconds": "Unlocked and opened shortly after each other becomes one updating notification. 0 sends one per event.",
+          "door_entity": "Optional. Without a door sensor only locked and unlocked are notified."
         }
       }
     },
@@ -188,7 +207,8 @@
       "invalid_door_states": "Åpen og lukket må ha ulike gyldige sensorverdier.",
       "invalid_homey_options": "Heimdall-alternativene må være ulike og finnes i select-entiteten.",
       "invalid_webhooks": "Velg tre ulike webhook-ID-er på minst 16 tegn, uten /, ? eller #.",
-      "webhook_in_use": "En webhook-ID er allerede i bruk. Deaktiver gammel automasjon eller velg en ny ID."
+      "webhook_in_use": "En webhook-ID er allerede i bruk. Deaktiver gammel automasjon eller velg en ny ID.",
+      "missing_camera": "Choose the camera at the door."
     }
   }
 }

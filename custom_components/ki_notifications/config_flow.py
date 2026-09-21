@@ -106,6 +106,23 @@ def schema(hass, kind, saved):
         add('icon', text, WEATHER_ICON, required=False)
         add('prompt', selector.TextSelector(selector.TextSelectorConfig(multiline=True)),
             WEATHER_PROMPT, required=False)
+    elif kind == 'door_camera':
+        known = 'lock.dorlas_blatann'
+        add('entity', entity(['lock']), known if hass.states.get(known) else None)
+        known = 'sensor.inngangsdor'
+        add('door_entity', entity(['sensor','binary_sensor']), known if hass.states.get(known) else None, False)
+        add('door_open', text, 'open')
+        add('door_closed', text, 'closed')
+        # Kameraet ved døra gjettes ut fra navnet; står det ingen der, må det velges.
+        guess = next((s.entity_id for s in hass.states.async_all('camera')
+                      if any(w in s.entity_id for w in ('dor', 'inngang', 'doorbell', 'ringe', 'entre', 'gang'))), None)
+        add('camera', entity(['camera']), guess)
+        add('image_mode', selector.SelectSelector(selector.SelectSelectorConfig(options=[
+            {'value':'proxy','label':'Direkte fra kameraet – ingenting lagres'},
+            {'value':'snapshot','label':'Lagret stillbilde fra øyeblikket'}])), 'proxy')
+        add('image_delay', selector.NumberSelector(selector.NumberSelectorConfig(min=0,max=10,step=0.5,mode='box',unit_of_measurement='s')), 1)
+        add('group_seconds', selector.NumberSelector(selector.NumberSelectorConfig(min=0,max=600,step=5,mode='box',unit_of_measurement='s')), 60)
+        add('live_ios', selector.BooleanSelector(), True)
     elif kind == 'ha_start':
         add('startup_delay', selector.NumberSelector(selector.NumberSelectorConfig(min=0,max=300,mode='box',unit_of_measurement='s')), 15)
     elif kind == 'lock_jammed':
@@ -143,6 +160,12 @@ def errors(hass, kind, data, entry_id=None):
         return {'base': 'no_weekdays'}
     if kind in {'autolock', 'door_blink'} and (data['door_open'] == data['door_closed'] or any(v in ['unknown','unavailable',''] for v in [data['door_open'],data['door_closed']])):
         return {'base': 'invalid_door_states'}
+    if kind == 'door_camera':
+        if not data.get('camera'):
+            return {'base': 'missing_camera'}
+        if data.get('door_entity') and (data.get('door_open') == data.get('door_closed')
+                or any(v in ['unknown','unavailable',''] for v in [data.get('door_open'), data.get('door_closed')])):
+            return {'base': 'invalid_door_states'}
     if kind == 'alarm_sync':
         source = hass.states.get(data['homey_select'])
         values = [data['homey_armed'],data['homey_disarmed']]
