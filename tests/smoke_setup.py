@@ -45,6 +45,18 @@ async def main():
    assert not h.data['ki_notifications'][extra.entry_id].enabled['enabled']
    assert await h.config_entries.async_unload(extra.entry_id)
    print(kind, 'SETUP AND UNLOAD OK')
+  # Dørvarsel med kamerabilde (2.6.0): lastes gjennom HAs egen laster, gir fire
+  # hendelsesbrytere pluss hovedbryter, testknapp og status, og avlastes rent.
+  door=config_entries.ConfigEntry(version=1,minor_version=1,domain='ki_notifications',title='door_camera',data={'kind':'door_camera','name':'door_camera','ios_targets':['mobile_app_test'],'android_targets':[],'entity':'lock.front','door_entity':'sensor.door','door_open':'open','door_closed':'closed','camera':'camera.gang','image_mode':'proxy','image_delay':0,'group_seconds':60,'live_ios':True},options={},source='user',unique_id=None,discovery_keys={},subentries_data=[])
+  await h.config_entries.async_add(door)
+  await h.async_block_till_done()
+  assert door.state==config_entries.ConfigEntryState.LOADED, door.state
+  own_door=entity_registry.async_entries_for_config_entry(entity_registry.async_get(h),door.entry_id)
+  assert len(own_door)==7, len(own_door)
+  runtime=h.data['ki_notifications'][door.entry_id]
+  assert runtime.enabled=={'locked':True,'unlocked':True,'opened':True,'closed':False}, runtime.enabled
+  assert await h.config_entries.async_unload(door.entry_id)
+  print('door_camera SETUP AND UNLOAD OK')
   assert not h.data.get('webhook',{})
   assert await h.config_entries.async_unload(entry.entry_id)
   print('UNLOAD OK')
