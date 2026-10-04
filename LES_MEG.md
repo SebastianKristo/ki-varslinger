@@ -1,4 +1,4 @@
-# KI Varslinger og sikkerhet 2.2.0
+# KI Varslinger og sikkerhet 2.7.0
 
 En egendefinert Home Assistant-integrasjon for familie, støvsuger, alarm, egne tilstandsendringer og Ruter-varsler. Oppsett og endringer gjøres i brukergrensesnittet. Ingen YAML-pakke eller KI-testskript kreves.
 
@@ -138,7 +138,7 @@ Velg `vacuum.sir_sweeps_a_lot`, romsensoren `sensor.sir_sweeps_a_lot_current_roo
 
 Knappene gjelder den konfigurerte støvsugeren. Gamle kontrollknapper ugyldiggjøres etter en godtatt kommando, ved avsluttet økt og ved omstart. Ved omstart mens støvsugeren går, gjenopptas overvåkingen; nytt varsel sendes ved neste status-/romendring. Testknappen sender bare et demonstrasjonsvarsel, uten kontrollknapper eller start av roboten.
 
-Bruk lange trykk/utvid varselet på iPhone for å se knappene. OS-et avgjør hvor fort en oppdatering vises og om varslet beholdes etter knappetrykk. Dette er et vanlig Companion-varsel som erstattes via `tag`, ikke en iOS Live Activity. Romoppdateringene ber om stille levering; Android har en egen kanal for stille oppdateringer. Integrasjonen kan ikke garantere telefonens presentasjon eller at en allerede fjernet melding gjenopprettes.
+Bruk lange trykk/utvid varselet på iPhone for å se knappene. OS-et avgjør hvor fort en oppdatering vises og om varslet beholdes etter knappetrykk. Knappevarselet er et vanlig Companion-varsel som erstattes via `tag`. Fremdriften kan i tillegg vises som Live Activity – se «Live Activities» nederst. Romoppdateringene ber om stille levering; Android har en egen kanal for stille oppdateringer. Integrasjonen kan ikke garantere telefonens presentasjon eller at en allerede fjernet melding gjenopprettes.
 
 ## Alarm
 
@@ -278,3 +278,54 @@ En nedtelling som allerede kjører, beholdes. Åpning, ukjent dørverdi eller av
 | Låsen er låst | Låsen rapporterer locked | Låsen rapporterer unlocked | Låsen mangler, er utilgjengelig eller har en mellom-/feiltilstand |
 
 Home Assistant viser disse som På/Av (råtilstand on/off); attributtet `tolket_verdi` er true/false eller null. `kilde` og `raverdi` viser hva integrasjonen leser. Verdiene oppdateres også når automatikkbryteren er av. Åpne og lukk døren fysisk for å kontrollere at visningen følger riktig vei. Gjenkjent verdi bekrefter samsvar med oppsettet, ikke at sensoren er fysisk korrekt eller koblet til riktig dør.
+
+## Live Activities (2.7.0)
+
+En Live Activity (iPhone) eller Live Update (Android) er ett varsel som blir stående på låseskjermen og oppdateres, i stedet for en rekke bannere. På iPhone med Dynamic Island vises den også der.
+
+**Krav:** iOS 17.2 eller Android 16, og Home Assistant 2026.7 eller nyere for iPhone. Telefoner som ikke støtter det, får det samme som et vanlig varsel som byttes ut. iPhone må kunne nå Home Assistant (hjemme eller via fjerntilgang) for at aktiviteten skal starte.
+
+### Som valg i reglene du har
+
+Åpne **Konfigurer** på regelen og slå på **Vis som Live Activity**. Valget er av som standard, og en regel uten det oppfører seg nøyaktig som før.
+
+| Regel | Viser | Avsluttes når |
+|---|---|---|
+| Støvsuger | Status og rom, fremdriftslinje hvis du velger en sensor | Tilbake i ladestasjonen |
+| Alarm | Nedtelling for utgangs- og inngangstid, deretter «utløst» | Alarmen er aktivert eller slått av |
+| Ruter | Nedtelling til trikken går | Ett minutt etter avgang |
+| Autolås | Nedtelling til døra låses | Døra er låst, eller åpnet igjen |
+| Dørlås fastkjørt | Hvor lenge låsen har stått fast | Låsen er i orden igjen |
+| Egendefinert tilstand | Meldingen din, valgfri fremdrift og nedtelling | Tilstanden er borte |
+
+- **Støvsuger:** knappevarselet (Pause/Stopp/Hjem) beholdes, men kommer stille, så du får én lyd ved start. En Live Activity kan ikke ha knapper.
+- **Alarm:** krever en `alarm_control_panel`-entitet. Nedtellingen bruker `delay`-attributtet fra Alarmo; uten det vises teksten uten klokke. De vanlige alarmvarslene sendes som før.
+- **Autolås:** må ha en telefon valgt i oppsettet, og viser nedtelling bare når ventetiden er minst 60 sekunder. Kortere enn det er over før aktiviteten rekker å vises.
+- **Ruter, fastkjørt lås og egendefinert tilstand:** aktiviteten erstatter banneret. Finner Ruter ingen avgang du rekker, kommer det vanlige varselet.
+
+### Nye typer
+
+Legg til integrasjonen igjen og velg typen. Hver har én bryter, en testknapp og en status.
+
+- **Elbillading:** en entitet som sier at bilen lader, batterisensor, og valgfritt ladegrense og gjenstående tid.
+- **Hvitevare:** en entitet som sier at maskinen går, og valgfritt gjenstående tid, fremdrift og programfase. Har maskinen bare en effektsensor, lag en binær malsensor som er på når effekten er over en terskel.
+- **Åpen dør, port eller vindu:** teller opp hvor lenge den har stått åpen. Starter først etter to minutter (kan endres), og har lav prioritet så den ikke tar Dynamic Island.
+- **Timer:** en `timer`-entitet som nedtelling.
+- **Basseng:** pumpe som går, med gjenstående tid fra en sensor eller en fast kjøretid, og valgfri vanntemperatur.
+- **Egen fremdrift:** velg selv entitet, fremdrift, tekst og ikon.
+
+**Tilstander som betyr at det pågår** er rå tilstander fra Utviklerverktøy → Tilstander, skilt med komma. **Gjenstående tid** kan være et tall med enhet (min, h, s), klokkeformat som `1:05:30`, eller et tidsstempel for når det er ferdig.
+
+### Felles valg
+
+Farge, side som åpnes ved trykk (f.eks. `/lovelace/vaskerom`), prioritet mot andre aktiviteter (0–1), minste tid mellom oppdateringer (30 sekunder) og hvor lenge «ferdig» blir stående (5 minutter).
+
+### Dette bør du vite
+
+- **iPhone skjuler meldingen mens en nedtelling vises**, og tittelen kan ikke endres etter start. Tittelen er derfor navnet på oppsettet – gi det et navn som sier hva det er.
+- **Oppdateringer strupes av iOS.** Integrasjonen sender aldri likt innhold to ganger, og bare den siste endringen innenfor intervallet. Nedtellinger går på telefonen, så en sensor som teller ned minutt for minutt gir ingen sendinger.
+- **Start har et eget, lite budsjett.** Slår du en aktivitet av og på mange ganger under testing, kan nye aktiviteter utebli en stund uten feilmelding. Det går over av seg selv.
+- **Maks åtte timer.** iOS avslutter en aktivitet etter åtte timer. Integrasjonen fjerner den like før, og starter den ikke på nytt før neste gang.
+- **Omstart:** står en aktivitet på telefonen når Home Assistant starter på nytt, oppdateres den stille hvis den fortsatt gjelder, og fjernes ellers.
+- **Test Live Activity** viser et eksempel i ett minutt under egen tag, uten å røre den ekte aktiviteten.
+- Første gang viser appen en engangsmelding om at innholdet er synlig på låst skjerm. Tillat Live Activities under iOS-innstillinger → Home Assistant.

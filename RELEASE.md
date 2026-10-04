@@ -1,32 +1,56 @@
-# KI Varslinger og sikkerhet 2.6.1
+# KI Varslinger og sikkerhet 2.7.0
 
-## CI er grønn igjen
+## Live Activities
 
-Validate-jobben var rød — ikke fordi en test feilet, men fordi én testfil ikke kunne lastes.
-`tests/test_vaerprompt.py` begynte med `import pytest`, og CI kjører `python -m unittest` i et miljø
-der pytest ikke er installert. Da feilet importen, og hele testjobben ble rød — mens de 90 andre
-testene, også de 16 nye for dørvarselet, gikk grønt i samme kjøring.
+Varsler som blir stående på låseskjermen og oppdateres, i stedet for en rekke bannere – Live Activity på iPhone (også i Dynamic Island) og Live Update på Android.
 
-Feilen kom inn med 2.5.0, så den kjøringen var rød også. Den ble ikke oppdaget fordi pytest fantes
-på maskinene testene ble kjørt på lokalt.
+### Som valg i reglene du har
 
-Filen er skrevet om til `unittest` med de samme sjekkene (`subTest` i stedet for `parametrize`), og
-henter nå standardtekstene fra `const.py` i stedet for en kopi. En ny test passer på at de tre
-linjene den etterligner, fortsatt står i `extra_notifications.py`, så den ikke tester noe som ikke
-finnes lenger.
+Slå på **Vis som Live Activity** under Konfigurer. Valget er av som standard; en regel uten det oppfører seg som før.
 
-## Innlastingstesten dekker dørvarselet
+- **Støvsuger** – status og rom, med fremdriftslinje hvis du velger en sensor. Knappevarselet beholdes, men kommer stille.
+- **Alarm** – nedtelling for utgangs- og inngangstid, deretter «utløst». Krever en `alarm_control_panel`.
+- **Ruter** – nedtelling til trikken går, i stedet for et banner som straks er utdatert.
+- **Autolås** – nedtelling til døra låses. Trenger en telefon i oppsettet og en ventetid på minst 60 sekunder.
+- **Dørlås fastkjørt** – teller opp til låsen er i orden igjen.
+- **Egendefinert tilstand** – meldingen din, med valgfri fremdrift og nedtelling, til tilstanden er borte.
 
-`tests/smoke_setup.py` — som laster integrasjonen gjennom Home Assistants egen laster — setter nå også
-opp en «Dør – låst/åpnet med kamerabilde»: den når `LOADED`, får sju entiteter (fire hendelsesbrytere,
-hovedbryter, testknapp og status), starter med «lukket» av og de tre andre på, og avlastes rent.
+### Seks nye typer
+
+- **Elbillading** – batteri mot ladegrense og tid igjen.
+- **Hvitevare** – gjenstående tid, fremdrift og programfase.
+- **Åpen dør, port eller vindu** – hvor lenge den har stått åpen, med lav prioritet.
+- **Timer** – en `timer`-entitet som nedtelling.
+- **Basseng** – pumpe som går, med gjenstående tid eller fast kjøretid, og vanntemperatur.
+- **Egen fremdrift** – velg selv entitet, fremdrift, tekst og ikon.
+
+### Felles
+
+- Farge, side som åpnes ved trykk, prioritet mot andre aktiviteter, minste tid mellom oppdateringer og hvor lenge «ferdig» blir stående.
+- Likt innhold sendes aldri to ganger, og innenfor 30 sekunder sendes bare den siste endringen – iOS struper og dropper ellers oppdateringene.
+- Nedtellinger går på telefonen. En sensor som teller ned minutt for minutt gir ingen sendinger.
+- Aktiviteten fjernes like før iOS sin åttetimersgrense, og finner tilbake etter omstart uten ny lyd.
+- **Test Live Activity**-knapp som viser et eksempel i ett minutt.
+- Statusentiteten viser om en aktivitet står på telefonen, og antall sendinger.
+
+## Krav
+
+iOS 17.2 eller Android 16, og Home Assistant 2026.7 eller nyere for iPhone. Eldre telefoner får et vanlig varsel som byttes ut.
+
+## Verdt å vite
+
+- iPhone skjuler meldingen mens en nedtelling vises, og tittelen kan ikke endres etter start. Tittelen er navnet på oppsettet.
+- Mange start og stopp under testing kan gjøre at nye aktiviteter uteblir en stund uten feilmelding. Det går over av seg selv.
+
+## Også rettet
+
+- `strings.json` manglet tekstene for tittel og prompt i værmeldingen.
 
 ### Kontrollert
 
-Kjørt i **samme miljø som CI**: Python 3.13.15, Home Assistant 2025.12.5, uten pytest.
+Python 3.13.16, Home Assistant 2025.12.5, uten pytest.
 
-- `python -m unittest discover -s tests` — 99 tester, alle bestått, ingen hoppet over
-- `python tests/smoke_setup.py` — familie, dørlys, autolås, ansiktsgjenkjenning og dørvarsel lastes
-  og avlastes
+- `python -m unittest discover -s tests` – 149 tester bestått, 50 av dem nye. Én hoppet over (publiseringsskriptet, fordi rsync mangler i testmiljøet).
+- `python tests/smoke_setup.py` – alle oppsett, også den nye hvitevaren, lastes og avlastes.
 
-Ingen endring i integrasjonens oppførsel fra 2.6.0.
+Ikke verifisert på en fysisk telefon: utseendet på iPhone og Android, klokke som teller opp, og om «ferdig» gir lyd. Se TESTING.md.

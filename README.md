@@ -50,7 +50,7 @@ Repoet må ha fått kode og release før det kan installeres på denne måten. D
 
 Se [LES_MEG.md](LES_MEG.md) for alarmoppsett, lydimport, Ruter-format, begrensninger og feilsøking. Deaktiver tilsvarende gamle automasjoner etter testing for å unngå dobbeltvarsler.
 
-Støvsugeren bruker vanlige Companion-varsler med samme `tag`, ikke iOS Live Activities. Telefonens OS bestemmer presentasjon og lyd. Alarmtestene endrer ikke alarmtilstand; kritisk iPhone-varsling er et eget, valgfritt valg for faktisk utløst alarm.
+Fra 2.7.0 kan støvsuger, alarm, Ruter, autolås, fastkjørt lås og egne tilstandsvarsler vises som Live Activity (iPhone) eller Live Update (Android), og det finnes seks egne typer: elbillading, hvitevare, åpen dør/port/vindu, timer, basseng og egen fremdrift. Valget er av som standard. Se «Live Activities» i [LES_MEG.md](LES_MEG.md). Telefonens OS bestemmer presentasjon og lyd. Alarmtestene endrer ikke alarmtilstand; kritisk iPhone-varsling er et eget, valgfritt valg for faktisk utløst alarm.
 
 ## Publiser fra Mac
 

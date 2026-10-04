@@ -76,7 +76,26 @@
           "image_mode": "Bilde i varselet",
           "image_delay": "Vent før bildet tas",
           "group_seconds": "Samle hendelser i ett varsel innenfor",
-          "live_ios": "Direkte kamera ved langt trykk (iPhone)"
+          "live_ios": "Direkte kamera ved langt trykk (iPhone)",
+          "live_activity": "Vis som Live Activity (iPhone) / Live Update (Android)",
+          "progress_entity": "Fremdrift – sensor (valgfritt)",
+          "limit_entity": "Ladegrense – sensor eller tallfelt (valgfritt)",
+          "progress_max": "Verdi som betyr ferdig",
+          "remaining_entity": "Gjenstående tid eller slutt-tidspunkt – sensor (valgfritt)",
+          "phase_entity": "Fase eller program – sensor (valgfritt)",
+          "active_states": "Tilstander som betyr at det pågår",
+          "entities": "Dører, porter og vinduer",
+          "open_states": "Tilstander som betyr åpen",
+          "open_delay": "Vis først når den har stått åpen i",
+          "duration": "Fast kjøretid (valgfritt)",
+          "temp_entity": "Vanntemperatur – sensor (valgfritt)",
+          "live_color": "Live Activity – farge på ikon og fremdriftslinje",
+          "live_url": "Live Activity – side som åpnes ved trykk (valgfritt)",
+          "live_priority": "Live Activity – prioritet mot andre aktiviteter",
+          "live_interval": "Live Activity – minste tid mellom oppdateringer",
+          "live_linger": "Live Activity – la «ferdig» stå i",
+          "title": "Tittel på varselet",
+          "prompt": "Prompt til AI-en ({data} = værdataene)"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",
@@ -88,7 +107,22 @@
           "image_mode": "Direkte: appen henter bildet med innloggingen sin, ingenting lagres. Lagret: et stillbilde fra øyeblikket legges i www/ki_varslinger og krever at mappa står i allowlist_external_dirs.",
           "image_delay": "Så den som kom står i bildet, ikke bare en tom gang.",
           "group_seconds": "Låst opp og åpnet like etter hverandre blir ett varsel som oppdateres. 0 gir ett varsel per hendelse.",
-          "door_entity": "Valgfri. Uten dørsensor varsles bare låst og låst opp."
+          "door_entity": "Valgfri. Uten dørsensor varsles bare låst og låst opp.",
+          "live_activity": "Ett varsel som blir stående på låseskjermen og oppdateres, i stedet for nye bannere. Krever iOS 17.2 eller Android 16 og Home Assistant 2026.7; eldre telefoner får et vanlig varsel som byttes ut. For alarm trengs en alarm_control_panel-entitet, og autolås viser nedtelling bare når ventetiden er minst 60 sekunder.",
+          "progress_entity": "Et tall, f.eks. batteriprosent eller rengjort andel. Vises som fremdriftslinje.",
+          "limit_entity": "Linja er full når batteriet når denne verdien. Uten den regnes 100 % som fullt.",
+          "remaining_entity": "Minutter igjen (eller en annen tidsenhet), klokkeformat som 1:05:30, eller et tidsstempel for når det er ferdig. Telefonen teller selv ned, så det sendes ikke en oppdatering hvert minutt.",
+          "phase_entity": "Teksten vises som melding, f.eks. «Skyller». På iPhone skjules meldingen mens en nedtelling vises.",
+          "active_states": "Rå tilstander fra Utviklerverktøy → Tilstander, skilt med komma. Aktiviteten starter når entiteten får en av dem, og avsluttes når den ikke har det lenger.",
+          "open_states": "Rå tilstander skilt med komma.",
+          "open_delay": "En dør som åpnes og lukkes igjen starter ingen aktivitet. iOS har et lite budsjett for hvor ofte en aktivitet kan startes.",
+          "duration": "Brukes når det ikke finnes en sensor for gjenstående tid: nedtellingen regnes fra pumpa startet.",
+          "live_color": "Hex-farge, f.eks. #2196F3.",
+          "live_url": "En side i Home Assistant, f.eks. /lovelace/vaskerom, eller en full https-adresse. Uten den åpnes standardvisningen.",
+          "live_priority": "0–1. Den høyeste får Dynamic Island og øverste plass på låseskjermen. Bruk lavt tall for noe som bare skal stå der, f.eks. en åpen port.",
+          "live_interval": "iOS struper og dropper oppdateringer som kommer for tett. Innenfor denne tiden sendes bare den siste.",
+          "live_linger": "Hvor lenge sluttmeldingen blir stående før aktiviteten fjernes. 0 fjerner den med en gang.",
+          "message": "For egen fremdrift: ordene state, phase og progress i krøllparenteser byttes ut med verdiene."
         }
       }
     },
@@ -104,7 +138,10 @@
       "invalid_homey_options": "Heimdall-alternativene må være ulike og finnes i select-entiteten.",
       "invalid_webhooks": "Velg tre ulike webhook-ID-er på minst 16 tegn, uten /, ? eller #.",
       "webhook_in_use": "En webhook-ID er allerede i bruk. Deaktiver gammel automasjon eller velg en ny ID.",
-      "missing_camera": "Velg kameraet ved døra."
+      "missing_camera": "Velg kameraet ved døra.",
+      "missing_entities": "Velg minst én dør, port eller vindu.",
+      "invalid_color": "Fargen må være en hex-kode som #2196F3.",
+      "invalid_url": "Adressen må begynne med / eller https://."
     }
   },
   "options": {
@@ -176,7 +213,26 @@
           "image_mode": "Bilde i varselet",
           "image_delay": "Vent før bildet tas",
           "group_seconds": "Samle hendelser i ett varsel innenfor",
-          "live_ios": "Direkte kamera ved langt trykk (iPhone)"
+          "live_ios": "Direkte kamera ved langt trykk (iPhone)",
+          "live_activity": "Vis som Live Activity (iPhone) / Live Update (Android)",
+          "progress_entity": "Fremdrift – sensor (valgfritt)",
+          "limit_entity": "Ladegrense – sensor eller tallfelt (valgfritt)",
+          "progress_max": "Verdi som betyr ferdig",
+          "remaining_entity": "Gjenstående tid eller slutt-tidspunkt – sensor (valgfritt)",
+          "phase_entity": "Fase eller program – sensor (valgfritt)",
+          "active_states": "Tilstander som betyr at det pågår",
+          "entities": "Dører, porter og vinduer",
+          "open_states": "Tilstander som betyr åpen",
+          "open_delay": "Vis først når den har stått åpen i",
+          "duration": "Fast kjøretid (valgfritt)",
+          "temp_entity": "Vanntemperatur – sensor (valgfritt)",
+          "live_color": "Live Activity – farge på ikon og fremdriftslinje",
+          "live_url": "Live Activity – side som åpnes ved trykk (valgfritt)",
+          "live_priority": "Live Activity – prioritet mot andre aktiviteter",
+          "live_interval": "Live Activity – minste tid mellom oppdateringer",
+          "live_linger": "Live Activity – la «ferdig» stå i",
+          "title": "Tittel på varselet",
+          "prompt": "Prompt til AI-en ({data} = værdataene)"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",
@@ -188,7 +244,22 @@
           "image_mode": "Direkte: appen henter bildet med innloggingen sin, ingenting lagres. Lagret: et stillbilde fra øyeblikket legges i www/ki_varslinger og krever at mappa står i allowlist_external_dirs.",
           "image_delay": "Så den som kom står i bildet, ikke bare en tom gang.",
           "group_seconds": "Låst opp og åpnet like etter hverandre blir ett varsel som oppdateres. 0 gir ett varsel per hendelse.",
-          "door_entity": "Valgfri. Uten dørsensor varsles bare låst og låst opp."
+          "door_entity": "Valgfri. Uten dørsensor varsles bare låst og låst opp.",
+          "live_activity": "Ett varsel som blir stående på låseskjermen og oppdateres, i stedet for nye bannere. Krever iOS 17.2 eller Android 16 og Home Assistant 2026.7; eldre telefoner får et vanlig varsel som byttes ut. For alarm trengs en alarm_control_panel-entitet, og autolås viser nedtelling bare når ventetiden er minst 60 sekunder.",
+          "progress_entity": "Et tall, f.eks. batteriprosent eller rengjort andel. Vises som fremdriftslinje.",
+          "limit_entity": "Linja er full når batteriet når denne verdien. Uten den regnes 100 % som fullt.",
+          "remaining_entity": "Minutter igjen (eller en annen tidsenhet), klokkeformat som 1:05:30, eller et tidsstempel for når det er ferdig. Telefonen teller selv ned, så det sendes ikke en oppdatering hvert minutt.",
+          "phase_entity": "Teksten vises som melding, f.eks. «Skyller». På iPhone skjules meldingen mens en nedtelling vises.",
+          "active_states": "Rå tilstander fra Utviklerverktøy → Tilstander, skilt med komma. Aktiviteten starter når entiteten får en av dem, og avsluttes når den ikke har det lenger.",
+          "open_states": "Rå tilstander skilt med komma.",
+          "open_delay": "En dør som åpnes og lukkes igjen starter ingen aktivitet. iOS har et lite budsjett for hvor ofte en aktivitet kan startes.",
+          "duration": "Brukes når det ikke finnes en sensor for gjenstående tid: nedtellingen regnes fra pumpa startet.",
+          "live_color": "Hex-farge, f.eks. #2196F3.",
+          "live_url": "En side i Home Assistant, f.eks. /lovelace/vaskerom, eller en full https-adresse. Uten den åpnes standardvisningen.",
+          "live_priority": "0–1. Den høyeste får Dynamic Island og øverste plass på låseskjermen. Bruk lavt tall for noe som bare skal stå der, f.eks. en åpen port.",
+          "live_interval": "iOS struper og dropper oppdateringer som kommer for tett. Innenfor denne tiden sendes bare den siste.",
+          "live_linger": "Hvor lenge sluttmeldingen blir stående før aktiviteten fjernes. 0 fjerner den med en gang.",
+          "message": "For egen fremdrift: ordene state, phase og progress i krøllparenteser byttes ut med verdiene."
         }
       }
     },
@@ -204,7 +275,10 @@
       "invalid_homey_options": "Heimdall-alternativene må være ulike og finnes i select-entiteten.",
       "invalid_webhooks": "Velg tre ulike webhook-ID-er på minst 16 tegn, uten /, ? eller #.",
       "webhook_in_use": "En webhook-ID er allerede i bruk. Deaktiver gammel automasjon eller velg en ny ID.",
-      "missing_camera": "Velg kameraet ved døra."
+      "missing_camera": "Velg kameraet ved døra.",
+      "missing_entities": "Velg minst én dør, port eller vindu.",
+      "invalid_color": "Fargen må være en hex-kode som #2196F3.",
+      "invalid_url": "Adressen må begynne med / eller https://."
     }
   }
 }

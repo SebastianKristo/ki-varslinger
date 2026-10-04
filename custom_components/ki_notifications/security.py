@@ -188,7 +188,9 @@ class Security:
         self.autolock_deadline = (dt_util.utcnow() + timedelta(seconds=remaining)).isoformat()
         self.security_error = ''
         self.auto_cancel = async_call_later(self.hass,remaining,due)
+        self.autolock_live_ok = delay >= 60
         self.update()
+        self.live_refresh()
 
     async def autolock_due(self, generation):
         async with self.lock:
@@ -198,17 +200,20 @@ class Security:
             self.autolock_deadline = None
             self.door_closed_at = None
             self.update()
-            door = self.hass.states.get(self.cfg['door_entity'])
-            lock = self.hass.states.get(self.cfg['entity'])
-            if not door or door.state != self.cfg['door_closed']:
-                return
-            if lock and lock.state == 'locked':
-                return
-            if not lock or lock.state != 'unlocked':
-                self.security_error = 'Autolås avbrutt: låsen er ikke bekreftet ulåst.'
-                self.update()
-                return
-            await self.security_call('lock','lock',self.cfg['entity'])
+            try:
+                door = self.hass.states.get(self.cfg['door_entity'])
+                lock = self.hass.states.get(self.cfg['entity'])
+                if not door or door.state != self.cfg['door_closed']:
+                    return
+                if lock and lock.state == 'locked':
+                    return
+                if not lock or lock.state != 'unlocked':
+                    self.security_error = 'Autolås avbrutt: låsen er ikke bekreftet ulåst.'
+                    self.update()
+                    return
+                await self.security_call('lock','lock',self.cfg['entity'])
+            finally:
+                await self.live_sync()      # nedtellingen er over, uansett utfall
 
     async def security_call(self, domain, action, entity_id, **extra):
         data = {'entity_id':entity_id, **extra}

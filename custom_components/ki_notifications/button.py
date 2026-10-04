@@ -1,9 +1,11 @@
 from homeassistant.components.button import ButtonEntity
-from .const import DOMAIN, SECURITY_KINDS
+from .const import DOMAIN, SECURITY_KINDS, LIVE_KINDS
 from .entity import KIEntity
 
 async def async_setup_entry(hass, entry, async_add_entities):
     r=hass.data[DOMAIN][entry.entry_id]
+    if r.live_on and r.kind not in LIVE_KINDS:
+        async_add_entities([KIButton(r, 'live_test', 'Test Live Activity')])
     if r.kind == 'autolock':
         async_add_entities([KIButton(r, 'autolock_check', 'Kontroller autolås'),
                             KIButton(r, 'autolock_start', 'Test autolås – lås etter ventetid')])
@@ -20,6 +22,7 @@ class KIButton(KIEntity, ButtonEntity):
     def __init__(self,r,key,name):
         super().__init__(r,'button_'+key,name,'mdi:bell-ring-outline')
         self.key=key
+        if key == 'live_test' or r.kind in LIVE_KINDS: self._attr_icon = 'mdi:cellphone-message'
         if key == 'blink': self._attr_icon = 'mdi:lightbulb-alert-outline'
         elif key == 'autolock_check': self._attr_icon = 'mdi:clipboard-check-outline'
         elif key == 'autolock_start': self._attr_icon = 'mdi:timer-lock-outline'

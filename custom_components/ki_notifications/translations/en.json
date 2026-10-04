@@ -78,7 +78,24 @@
           "image_mode": "Image in the notification",
           "image_delay": "Wait before taking the image",
           "group_seconds": "Group events into one notification within",
-          "live_ios": "Live camera on long press (iPhone)"
+          "live_ios": "Live camera on long press (iPhone)",
+          "live_activity": "Show as Live Activity (iPhone) / Live Update (Android)",
+          "progress_entity": "Progress – sensor (optional)",
+          "limit_entity": "Charge limit – sensor or number (optional)",
+          "progress_max": "Value that means finished",
+          "remaining_entity": "Remaining time or end time – sensor (optional)",
+          "phase_entity": "Phase or programme – sensor (optional)",
+          "active_states": "States that mean it is running",
+          "entities": "Doors, gates and windows",
+          "open_states": "States that mean open",
+          "open_delay": "Show only after it has been open for",
+          "duration": "Fixed run time (optional)",
+          "temp_entity": "Water temperature – sensor (optional)",
+          "live_color": "Live Activity – colour of icon and progress bar",
+          "live_url": "Live Activity – page opened on tap (optional)",
+          "live_priority": "Live Activity – priority against other activities",
+          "live_interval": "Live Activity – minimum time between updates",
+          "live_linger": "Live Activity – keep \"finished\" for"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",
@@ -90,7 +107,22 @@
           "image_mode": "Direct: the app fetches the image with its own login, nothing is stored. Saved: a still from the moment goes to www/ki_varslinger and requires the folder in allowlist_external_dirs.",
           "image_delay": "So whoever arrived is in the picture, not just an empty hallway.",
           "group_seconds": "Unlocked and opened shortly after each other becomes one updating notification. 0 sends one per event.",
-          "door_entity": "Optional. Without a door sensor only locked and unlocked are notified."
+          "door_entity": "Optional. Without a door sensor only locked and unlocked are notified.",
+          "live_activity": "One notification that stays on the Lock Screen and updates, instead of new banners. Requires iOS 17.2 or Android 16 and Home Assistant 2026.7; older phones get an ordinary notification that is replaced. Alarm needs an alarm_control_panel entity, and autolock only shows a countdown when the delay is at least 60 seconds.",
+          "progress_entity": "A number, e.g. battery percentage or cleaned share. Shown as a progress bar.",
+          "limit_entity": "The bar is full when the battery reaches this value. Without it, 100 % counts as full.",
+          "remaining_entity": "Minutes left (or another time unit), clock format such as 1:05:30, or a timestamp for when it finishes. The phone counts down by itself, so no update is sent every minute.",
+          "phase_entity": "The text is shown as the message, e.g. \"Rinsing\". On iPhone the message is hidden while a countdown is shown.",
+          "active_states": "Raw states from Developer tools → States, comma separated. The activity starts when the entity has one of them and ends when it no longer does.",
+          "open_states": "Raw states, comma separated.",
+          "open_delay": "A door that is opened and closed again does not start an activity. iOS has a small budget for how often an activity can be started.",
+          "duration": "Used when there is no sensor for remaining time: the countdown is measured from when the pump started.",
+          "live_color": "Hex colour, e.g. #2196F3.",
+          "live_url": "A page in Home Assistant, e.g. /lovelace/laundry, or a full https address. Without it the default view opens.",
+          "live_priority": "0–1. The highest gets the Dynamic Island and the top of the Lock Screen. Use a low number for something that should just sit there, e.g. an open gate.",
+          "live_interval": "iOS throttles and drops updates that arrive too often. Within this time only the latest is sent.",
+          "live_linger": "How long the final message stays before the activity is removed. 0 removes it at once.",
+          "message": "For custom progress: the words state, phase and progress in curly braces are replaced with the values."
         }
       }
     },
@@ -106,7 +138,10 @@
       "invalid_homey_options": "Heimdall-alternativene må være ulike og finnes i select-entiteten.",
       "invalid_webhooks": "Velg tre ulike webhook-ID-er på minst 16 tegn, uten /, ? eller #.",
       "webhook_in_use": "En webhook-ID er allerede i bruk. Deaktiver gammel automasjon eller velg en ny ID.",
-      "missing_camera": "Choose the camera at the door."
+      "missing_camera": "Choose the camera at the door.",
+      "missing_entities": "Choose at least one door, gate or window.",
+      "invalid_color": "The colour must be a hex code such as #2196F3.",
+      "invalid_url": "The address must start with / or https://."
     }
   },
   "options": {
@@ -180,7 +215,24 @@
           "image_mode": "Image in the notification",
           "image_delay": "Wait before taking the image",
           "group_seconds": "Group events into one notification within",
-          "live_ios": "Live camera on long press (iPhone)"
+          "live_ios": "Live camera on long press (iPhone)",
+          "live_activity": "Show as Live Activity (iPhone) / Live Update (Android)",
+          "progress_entity": "Progress – sensor (optional)",
+          "limit_entity": "Charge limit – sensor or number (optional)",
+          "progress_max": "Value that means finished",
+          "remaining_entity": "Remaining time or end time – sensor (optional)",
+          "phase_entity": "Phase or programme – sensor (optional)",
+          "active_states": "States that mean it is running",
+          "entities": "Doors, gates and windows",
+          "open_states": "States that mean open",
+          "open_delay": "Show only after it has been open for",
+          "duration": "Fixed run time (optional)",
+          "temp_entity": "Water temperature – sensor (optional)",
+          "live_color": "Live Activity – colour of icon and progress bar",
+          "live_url": "Live Activity – page opened on tap (optional)",
+          "live_priority": "Live Activity – priority against other activities",
+          "live_interval": "Live Activity – minimum time between updates",
+          "live_linger": "Live Activity – keep \"finished\" for"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",
@@ -192,7 +244,22 @@
           "image_mode": "Direct: the app fetches the image with its own login, nothing is stored. Saved: a still from the moment goes to www/ki_varslinger and requires the folder in allowlist_external_dirs.",
           "image_delay": "So whoever arrived is in the picture, not just an empty hallway.",
           "group_seconds": "Unlocked and opened shortly after each other becomes one updating notification. 0 sends one per event.",
-          "door_entity": "Optional. Without a door sensor only locked and unlocked are notified."
+          "door_entity": "Optional. Without a door sensor only locked and unlocked are notified.",
+          "live_activity": "One notification that stays on the Lock Screen and updates, instead of new banners. Requires iOS 17.2 or Android 16 and Home Assistant 2026.7; older phones get an ordinary notification that is replaced. Alarm needs an alarm_control_panel entity, and autolock only shows a countdown when the delay is at least 60 seconds.",
+          "progress_entity": "A number, e.g. battery percentage or cleaned share. Shown as a progress bar.",
+          "limit_entity": "The bar is full when the battery reaches this value. Without it, 100 % counts as full.",
+          "remaining_entity": "Minutes left (or another time unit), clock format such as 1:05:30, or a timestamp for when it finishes. The phone counts down by itself, so no update is sent every minute.",
+          "phase_entity": "The text is shown as the message, e.g. \"Rinsing\". On iPhone the message is hidden while a countdown is shown.",
+          "active_states": "Raw states from Developer tools → States, comma separated. The activity starts when the entity has one of them and ends when it no longer does.",
+          "open_states": "Raw states, comma separated.",
+          "open_delay": "A door that is opened and closed again does not start an activity. iOS has a small budget for how often an activity can be started.",
+          "duration": "Used when there is no sensor for remaining time: the countdown is measured from when the pump started.",
+          "live_color": "Hex colour, e.g. #2196F3.",
+          "live_url": "A page in Home Assistant, e.g. /lovelace/laundry, or a full https address. Without it the default view opens.",
+          "live_priority": "0–1. The highest gets the Dynamic Island and the top of the Lock Screen. Use a low number for something that should just sit there, e.g. an open gate.",
+          "live_interval": "iOS throttles and drops updates that arrive too often. Within this time only the latest is sent.",
+          "live_linger": "How long the final message stays before the activity is removed. 0 removes it at once.",
+          "message": "For custom progress: the words state, phase and progress in curly braces are replaced with the values."
         }
       }
     },
@@ -208,7 +275,10 @@
       "invalid_homey_options": "Heimdall-alternativene må være ulike og finnes i select-entiteten.",
       "invalid_webhooks": "Velg tre ulike webhook-ID-er på minst 16 tegn, uten /, ? eller #.",
       "webhook_in_use": "En webhook-ID er allerede i bruk. Deaktiver gammel automasjon eller velg en ny ID.",
-      "missing_camera": "Choose the camera at the door."
+      "missing_camera": "Choose the camera at the door.",
+      "missing_entities": "Choose at least one door, gate or window.",
+      "invalid_color": "The colour must be a hex code such as #2196F3.",
+      "invalid_url": "The address must start with / or https://."
     }
   }
 }

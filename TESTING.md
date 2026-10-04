@@ -1,6 +1,6 @@
-# Testresultat – KI Varslinger og sikkerhet 2.6.1
+# Testresultat – KI Varslinger og sikkerhet 2.7.0
 
-Testet 15. september 2026 med Python 3.13.15 og Home Assistant Core 2025.12.5 i et isolert lokalt miljø.
+Sist testet 4. oktober 2026 (2.7.0). Tidligere avsnitt: testet 15. september 2026 med Python 3.13.15 og Home Assistant Core 2025.12.5 i et isolert lokalt miljø.
 
 ## Funksjonstester
 
@@ -72,3 +72,13 @@ Innlastingstesten oppretter og avlaster også Dørlys med to entiteter (bryter o
 74 tester bestått. Åtte nye tester dekker blinketest med automatikk av, feil ved utilgjengelig lys, oppdatering av avlesning mens automatikk er av, rå true/false-verdier, ukjent kontra false, ikke-aktuerende kontroll, testnedtelling med faktisk simulert lock.lock, bevaring av eksisterende timer, avvisning av ugyldige forutsetninger og avbrudd ved åpning.
 
 Innlastingstesten besto med ni entiteter for Autolås og sju for Dørlys. Tidligere oppgitte entitetsantall gjelder de eldre versjonene. Testene betjener ingen fysisk dør eller lampe. Tester kjørt 15. september 2026 mot Home Assistant 2025.12.5.
+
+## Live Activities 2.7.0
+
+50 nye tester, 149 totalt. Kjørt 4. oktober 2026 med Python 3.13.16 og Home Assistant 2025.12.5, uten pytest. Én test (publiseringsskriptet) ble hoppet over fordi rsync mangler i testmiljøet; den er ikke endret.
+
+Dekker: tolkning av gjenstående tid (tall med enhet, klokkeformat, tidsstempel, avvisning av fortid og ugyldige verdier); startvarselets felter mot Companion-dokumentasjonen (`live_update`, `tag`, `progress`, `progress_max`, `chronometer`, `when`, `critical_text`, ikon, farge, `url`, `relevance_score`); Android-felter; at likt innhold ikke sendes på nytt; at en nedtelling som tikker ikke gir sendinger; struping til siste verdi med ett tidsur; stille oppdateringer; «ferdig» og fjerning; gjenbruk når et nytt forløp starter mens «ferdig» står; av-bryter og hovedbryter; åttetimersgrensen; omstart med og uten gjenværende aktivitet; utilgjengelige kilder; testknappen; alle seks nye typer; alle seks eksisterende regler med valget på, og at de er uendret med valget av; skjemaer, validering og at alle felter har tekst på norsk og engelsk.
+
+Innlastingstesten setter også opp en hvitevare gjennom HAs egen laster: tre entiteter, aktiviteten starter på en ekte tilstandsendring, og oppsettet avlastes rent.
+
+**Ikke verifisert på telefon:** hvordan aktiviteten faktisk ser ut på iPhone og Android, at en klokke som teller opp (åpen dør, fastkjørt lås) vises som ventet, om «ferdig» gir lyd, og Alarmos `delay`-attributt mot en ekte alarm. Tidsur og varslingshandlinger er simulerte. Bruk **Test Live Activity** og én ordinær hendelse per oppsett etter installasjon.

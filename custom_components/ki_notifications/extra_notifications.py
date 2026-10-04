@@ -52,7 +52,10 @@ class ExtraNotifications:
             self.jam_cancel = None
             state = self.hass.states.get(self.cfg['entity'])
             if self.enabled['enabled'] and state and state.state == 'jammed':
-                await self.jam_notice()
+                if self.live_on:
+                    await self.live_sync()      # teller opp til låsen er i orden igjen
+                else:
+                    await self.jam_notice()
 
     async def jam_notice(self, test=False):
         await self.send('🔒 Dørlås fastkjørt', ('TEST: ' if test else '') + 'Inngangsdørlåsen er fastkjørt og får ikke låst seg.', 'mdi:lock-alert', test=test)

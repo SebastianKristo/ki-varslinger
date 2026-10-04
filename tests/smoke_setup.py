@@ -57,6 +57,22 @@ async def main():
   assert runtime.enabled=={'locked':True,'unlocked':True,'opened':True,'closed':False}, runtime.enabled
   assert await h.config_entries.async_unload(door.entry_id)
   print('door_camera SETUP AND UNLOAD OK')
+  # Live Activity – hvitevare (2.7.0): lastes gjennom HAs egen laster med bryter, testknapp
+  # og status, starter aktiviteten på en ekte tilstandsendring og avlastes rent.
+  h.states.async_set('sensor.washer','idle')
+  live=config_entries.ConfigEntry(version=1,minor_version=1,domain='ki_notifications',title='live_appliance',data={'kind':'live_appliance','name':'Vaskemaskin','ios_targets':['mobile_app_test'],'android_targets':[],'entity':'sensor.washer','active_states':'run','icon':'mdi:washing-machine'},options={},source='user',unique_id=None,discovery_keys={},subentries_data=[])
+  await h.config_entries.async_add(live)
+  await h.async_block_till_done()
+  assert live.state==config_entries.ConfigEntryState.LOADED, live.state
+  own_live=entity_registry.async_entries_for_config_entry(entity_registry.async_get(h),live.entry_id)
+  assert len(own_live)==3, len(own_live)
+  h.states.async_set('sensor.washer','run');await h.async_block_till_done()
+  assert sent[-1]['title']=='Vaskemaskin' and sent[-1]['data']['live_update'] is True and sent[-1]['data']['tag']=='ki_live_'+live.entry_id, sent[-1]
+  assert await h.config_entries.async_unload(live.entry_id)
+  count=len(sent)
+  h.states.async_set('sensor.washer','idle');await h.async_block_till_done()
+  assert len(sent)==count
+  print('live_appliance SETUP, START AND UNLOAD OK')
   assert not h.data.get('webhook',{})
   assert await h.config_entries.async_unload(entry.entry_id)
   print('UNLOAD OK')

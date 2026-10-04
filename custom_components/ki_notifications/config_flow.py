@@ -4,7 +4,8 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers import selector
-from .const import (DOMAIN, KINDS, PEOPLE, SECURITY_KINDS,
+from .const import (DOMAIN, KINDS, PEOPLE, SECURITY_KINDS, LIVE_COLORS, LIVE_INTERVAL, LIVE_KINDS,
+                    LIVE_LINGER, LIVE_NAMES, LIVE_OPTION_KINDS,
                     WEATHER_ICON, WEATHER_PROMPT, WEATHER_TITLE)
 
 
@@ -22,7 +23,13 @@ def schema(hass, kind, saved):
     multi = lambda domains: selector.EntitySelector(selector.EntitySelectorConfig(domain=domains, multiple=True))
     services = sorted(k for k in hass.services.async_services().get('notify', {}) if k.startswith('mobile_app_'))
     phone = selector.SelectSelector(selector.SelectSelectorConfig(options=services, multiple=True, custom_value=True))
-    add('name', text, KINDS[kind])
+    add('name', text, LIVE_NAMES.get(kind, KINDS[kind]))
+    seconds = lambda low, high: selector.NumberSelector(selector.NumberSelectorConfig(min=low, max=high, mode='box', unit_of_measurement='s'))
+    measure = ['sensor', 'number', 'input_number']
+    if kind == 'autolock':
+        # Autolås trenger bare en telefon når nedtellingen skal vises som Live Activity.
+        add('ios_targets', phone, [])
+        add('android_targets', phone, [])
     if kind not in SECURITY_KINDS:
         add('ios_targets', phone, [x for x in services if x == 'mobile_app_sebastian_iphone_17_pro'])
         add('android_targets', phone, [x for x in services if x in (['mobile_app_sebastian_pixel_9_pro_fold', 'mobile_app_sebastian_oneplus_15'] if kind in {'weather_ai','ha_start','lock_jammed'} else ['mobile_app_sebastian_pixel_9_pro_fold'])])
@@ -139,13 +146,58 @@ def schema(hass, kind, saved):
         add('directions', text, 'majorstuen,ljabru')
         for key, value in [('walk',4),('ride',7),('transfer',3),('before_end',5)]:
             add(key, selector.NumberSelector(selector.NumberSelectorConfig(min=0,max=120,mode='box',unit_of_measurement='min')), value)
+    elif kind in LIVE_KINDS:
+        defaults = LIVE_KINDS[kind]
+        if kind == 'live_open':
+            add('entities', multi(['binary_sensor', 'cover', 'lock', 'sensor', 'input_boolean']))
+            add('open_states', text, defaults[3])
+            add('open_delay', seconds(0, 3600), 120)
+        elif kind == 'live_timer':
+            add('entity', entity(['timer']))
+        else:
+            add('entity', selector.EntitySelector())
+            add('active_states', text, defaults[3])
+            add('progress_entity', entity(measure), required=False)
+            if kind == 'live_ev':
+                add('limit_entity', entity(measure), required=False)
+            if kind == 'live_progress':
+                add('progress_max', selector.NumberSelector(selector.NumberSelectorConfig(min=1, max=1000000, mode='box')), 100)
+            add('remaining_entity', entity(['sensor', 'input_datetime']), required=False)
+            if kind in {'live_appliance', 'live_progress'}:
+                add('phase_entity', entity(['sensor', 'select', 'input_select', 'input_text']), required=False)
+            if kind == 'live_progress':
+                add('message', text, required=False)
+            if kind == 'live_pool':
+                add('duration', selector.NumberSelector(selector.NumberSelectorConfig(min=1, max=480, mode='box', unit_of_measurement='min')), required=False)
+                add('temp_entity', entity(['sensor']), required=False)
+        add('icon', selector.IconSelector(), defaults[0])
+    if kind in LIVE_OPTION_KINDS:
+        add('live_activity', selector.BooleanSelector(), False)
+        if kind in {'vacuum', 'state'}:
+            add('progress_entity', entity(measure), required=False)
+        if kind == 'state':
+            add('remaining_entity', entity(['sensor', 'input_datetime']), required=False)
+    if kind in LIVE_OPTION_KINDS or kind in LIVE_KINDS:
+        add('live_color', text, LIVE_KINDS[kind][1] if kind in LIVE_KINDS else LIVE_COLORS[kind])
+        add('live_url', text, required=False)
+        add('live_priority', selector.NumberSelector(selector.NumberSelectorConfig(min=0, max=1, step=0.1, mode='slider')),
+            LIVE_KINDS[kind][2] if kind in LIVE_KINDS else 0.5)
+        add('live_interval', seconds(30, 900), LIVE_INTERVAL)
+        add('live_linger', seconds(0, 3600), LIVE_LINGER)
     return vol.Schema(fields)
 
 
 def errors(hass, kind, data, entry_id=None):
     targets = data.get('ios_targets', []) + data.get('android_targets', [])
-    if not targets and kind not in SECURITY_KINDS:
+    if not targets and (kind not in SECURITY_KINDS or (kind == 'autolock' and data.get('live_activity'))):
         return {'base': 'no_targets'}
+    if kind == 'live_open' and not data.get('entities'):
+        return {'base': 'missing_entities'}
+    color = str(data.get('live_color') or '#000000').strip()
+    if color.startswith('#') and (len(color) not in (4, 7) or any(ch not in '0123456789abcdefABCDEF' for ch in color[1:])):
+        return {'base': 'invalid_color'}
+    if data.get('live_url') and not str(data['live_url']).startswith(('/', 'https://')):
+        return {'base': 'invalid_url'}
     if any(not hass.services.has_service('notify', s) for s in targets):
         return {'base': 'missing_service'}
     if set(data.get('ios_targets', [])) & set(data.get('android_targets', [])):
