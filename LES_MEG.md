@@ -1,4 +1,4 @@
-# KI Varslinger og sikkerhet 2.7.0
+# KI Varslinger og sikkerhet 2.8.0
 
 En egendefinert Home Assistant-integrasjon for familie, støvsuger, alarm, egne tilstandsendringer og Ruter-varsler. Oppsett og endringer gjøres i brukergrensesnittet. Ingen YAML-pakke eller KI-testskript kreves.
 
@@ -329,3 +329,28 @@ Farge, side som åpnes ved trykk (f.eks. `/lovelace/vaskerom`), prioritet mot an
 - **Omstart:** står en aktivitet på telefonen når Home Assistant starter på nytt, oppdateres den stille hvis den fortsatt gjelder, og fjernes ellers.
 - **Test Live Activity** viser et eksempel i ett minutt under egen tag, uten å røre den ekte aktiviteten.
 - Første gang viser appen en engangsmelding om at innholdet er synlig på låst skjerm. Tillat Live Activities under iOS-innstillinger → Home Assistant.
+
+## Android og Samsung (2.8.0)
+
+### Ikon og farge i vanlige varsler
+
+Alle varsler har et eget ikon i statuslinja på Android (hus, lås, støvsuger, buss osv.). Fra 2.8.0 får ikonet også farge, og du kan legge til et stort ikon:
+
+- **Android – farge på ikonet:** hex-farge. Standard følger typen: grønn for familie, rød for alarm og fastkjørt lås, oransje for dørvarsel. Alarmvarslene bytter selv farge etter hendelse (oransje aktivert, grønn deaktivert, rød utløst) så lenge du ikke har valgt en annen farge enn standarden.
+- **Android – stort ikon:** et bilde som vises til høyre i varselet, f.eks. `/local/ikoner/alarm.png` (fil i `/config/www/ikoner/`) eller en https-adresse. Dørvarselet med kamerabilde viser bildet i stedet.
+
+Knappene i støvsugervarselet har ikke ikoner på Android; det støtter ikke appen.
+
+### Live Updates
+
+På Android 16 vises en Live Activity som **Live Update**: festet øverst i varslene, på låseskjermen og alltid-på-skjermen, og som en brikke i statuslinja. På Samsung betyr det One UI 8 eller nyere, der den også vises i Now Bar.
+
+**Samsung:** brikken i statuslinja vises først når du har slått på **Live-varsler for alle apper** under Utvikleralternativer (Innstillinger → Om telefonen → Programvareinformasjon → trykk sju ganger på Byggnummer, deretter Innstillinger → Utvikleralternativer).
+
+Slik oppfører den seg på Android:
+
+- **Brikken** viser nedtellingen når det finnes en, ellers en kort tekst på inntil sju tegn (prosent, klokkeslett, «2 åpne»). Lengre tekst kortes ned, for ellers viser Android bare ikonet.
+- **Festet:** varselet kan ikke sveipes bort mens det pågår, og fjernes av seg selv etterpå. Kan slås av med **Live Activity – fest varselet på Android**.
+- **Ingen minustid:** Android teller videre under null. Når en nedtelling er ute, tas klokka bort, og Ruter viser «Har gått nå».
+- **Egen kanal:** «KI Varsler – live». Lyd og vibrasjon for den styres i Android-innstillingene for Home Assistant-appen.
+- **Eldre Android (15 og lavere, One UI 7):** samme varsel vises som et vanlig, festet varsel med fremdriftslinje og klokke.

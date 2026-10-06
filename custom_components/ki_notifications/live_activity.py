@@ -24,9 +24,9 @@ from homeassistant.util import dt as dt_util
 
 import asyncio
 
-from .const import (INVALID, LIVE_COLORS, LIVE_INTERVAL, LIVE_KINDS, LIVE_LINGER,
+from .const import (ANDROID_CHIP, INVALID, LIVE_COLORS, LIVE_INTERVAL, LIVE_KINDS, LIVE_LINGER,
                     LIVE_MAX_SECONDS, LIVE_OPTION_KINDS, LIVE_WHEN_TOLERANCE)
-from .logic import end_timestamp, number, states_set
+from .logic import chip_text, end_timestamp, number, states_set
 
 VACUUM_LABELS = {'cleaning': 'Støvsuger', 'paused': 'Satt på pause', 'idle': 'Stoppet',
                  'returning': 'Returnerer hjem', 'docked': 'Tilbake i ladestasjonen',
@@ -195,11 +195,13 @@ class LiveActivity:
             payload['title'], payload['message'], payload['icon'], tag=tag or self.live_tag,
             quiet=not loud, extra=data, test=test, force=True,
             ios_extra=None if loud else {'silent': True},
-            # Samme Android-kanal for start og oppdatering; alert_once holder oppdateringene stille.
-            android_extra={'channel': f"{c.get('channel', 'KI Varsler')} – live", 'importance': 'high',
-                           'sticky': True, 'persistent': False, 'alert_once': not alert})
+            android_extra=self._live_android(payload, alert))
         if tag:
             return
+        # Android teller videre under null. Når nedtellingen er ute, spørres regelen på nytt,
+        # så klokka fjernes eller flyttes i stedet for å vise minustid.
+        left = payload.get('when', 0) - dt_util.utcnow().timestamp()
+        self.live_timer('zero', left + 1 if left > 0 else None)
         was_known = self.live_active or self.live_orphan
         self.live_active, self.live_orphan = True, False
         self.live_payload = payload
@@ -211,13 +213,31 @@ class LiveActivity:
             await self.save_settings()
         self.update()
 
+    def _live_android(self, payload, alert):
+        """Live Update på Android 16 (Now Bar og statuslinjebrikke på Samsung med One UI 8).
+
+        Eldre Android-telefoner viser det samme som et vanlig varsel med fremdriftslinje
+        og klokke. «persistent» gjør at det ikke sveipes bort ved et uhell mens det pågår;
+        det fjernes uansett når forløpet er over.
+        """
+        c = self.cfg
+        # Samme kanal for start og oppdatering; alert_once holder oppdateringene stille.
+        out = {'channel': f"{c.get('channel', 'KI Varsler')} – live", 'importance': 'high', 'sticky': True,
+               'persistent': bool(c.get('live_android_persistent', True)), 'alert_once': not alert}
+        chip = payload.get('critical_text')
+        if not chip and 'when' not in payload and payload.get('progress_max'):
+            chip = f"{round(100 * payload['progress'] / payload['progress_max'])}%"
+        if chip:
+            out['critical_text'] = chip_text(chip, ANDROID_CHIP)
+        return out
+
     async def live_clear_tag(self, tag):
         message = self.last_message
         await self.send('', 'clear_notification', tag=tag, quiet=True, force=True)
         self.last_message = message
 
     async def _live_clear(self):
-        for name in ('throttle', 'linger', 'expire'):
+        for name in ('throttle', 'linger', 'expire', 'zero'):
             self.live_timer(name)
         await self.live_clear_tag(self.live_tag)
         self.live_active = self.live_orphan = self.live_lingering = False
@@ -380,8 +400,9 @@ class LiveActivity:
             self.ruter_live = None
             return None
         self.live_wake(live['until'] - now)
-        return {'title': live['title'], 'message': live['message'], 'icon': 'mdi:bus-clock',
-                'critical_text': live['time'], 'when': live['when'], 'relevance': 0.8}
+        gone = now >= live['when']
+        return {'title': live['title'], 'message': 'Har gått nå' if gone else live['message'], 'icon': 'mdi:bus-clock',
+                'critical_text': 'Gått' if gone else live['time'], 'when': None if gone else live['when'], 'relevance': 0.8}
 
     def desired_autolock(self, now):
         if not self.auto_cancel or not self.autolock_deadline or not self.autolock_live_ok:

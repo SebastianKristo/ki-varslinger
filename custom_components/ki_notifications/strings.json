@@ -95,7 +95,10 @@
           "live_interval": "Live Activity – minste tid mellom oppdateringer",
           "live_linger": "Live Activity – la «ferdig» stå i",
           "title": "Tittel på varselet",
-          "prompt": "Prompt til AI-en ({data} = værdataene)"
+          "prompt": "Prompt til AI-en ({data} = værdataene)",
+          "android_color": "Android – farge på ikonet",
+          "android_icon_url": "Android – stort ikon (bilde, valgfritt)",
+          "live_android_persistent": "Live Activity – fest varselet på Android"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",
@@ -122,7 +125,10 @@
           "live_priority": "0–1. Den høyeste får Dynamic Island og øverste plass på låseskjermen. Bruk lavt tall for noe som bare skal stå der, f.eks. en åpen port.",
           "live_interval": "iOS struper og dropper oppdateringer som kommer for tett. Innenfor denne tiden sendes bare den siste.",
           "live_linger": "Hvor lenge sluttmeldingen blir stående før aktiviteten fjernes. 0 fjerner den med en gang.",
-          "message": "For egen fremdrift: ordene state, phase og progress i krøllparenteser byttes ut med verdiene."
+          "message": "For egen fremdrift: ordene state, phase og progress i krøllparenteser byttes ut med verdiene.",
+          "android_color": "Hex-farge, f.eks. #F44336. Farger ikonet i statuslinja og i varselet.",
+          "android_icon_url": "Et bilde som vises som stort ikon til høyre i varselet, f.eks. /local/ikoner/alarm.png eller en https-adresse. Vises ikke når varselet har et kamerabilde.",
+          "live_android_persistent": "Varselet kan ikke sveipes bort mens det pågår, og fjernes av seg selv når det er ferdig. På Samsung med One UI 8 vises det i Now Bar og som brikke i statuslinja."
         }
       }
     },
@@ -232,7 +238,10 @@
           "live_interval": "Live Activity – minste tid mellom oppdateringer",
           "live_linger": "Live Activity – la «ferdig» stå i",
           "title": "Tittel på varselet",
-          "prompt": "Prompt til AI-en ({data} = værdataene)"
+          "prompt": "Prompt til AI-en ({data} = værdataene)",
+          "android_color": "Android – farge på ikonet",
+          "android_icon_url": "Android – stort ikon (bilde, valgfritt)",
+          "live_android_persistent": "Live Activity – fest varselet på Android"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",
@@ -259,7 +268,10 @@
           "live_priority": "0–1. Den høyeste får Dynamic Island og øverste plass på låseskjermen. Bruk lavt tall for noe som bare skal stå der, f.eks. en åpen port.",
           "live_interval": "iOS struper og dropper oppdateringer som kommer for tett. Innenfor denne tiden sendes bare den siste.",
           "live_linger": "Hvor lenge sluttmeldingen blir stående før aktiviteten fjernes. 0 fjerner den med en gang.",
-          "message": "For egen fremdrift: ordene state, phase og progress i krøllparenteser byttes ut med verdiene."
+          "message": "For egen fremdrift: ordene state, phase og progress i krøllparenteser byttes ut med verdiene.",
+          "android_color": "Hex-farge, f.eks. #F44336. Farger ikonet i statuslinja og i varselet.",
+          "android_icon_url": "Et bilde som vises som stort ikon til høyre i varselet, f.eks. /local/ikoner/alarm.png eller en https-adresse. Vises ikke når varselet har et kamerabilde.",
+          "live_android_persistent": "Varselet kan ikke sveipes bort mens det pågår, og fjernes av seg selv når det er ferdig. På Samsung med One UI 8 vises det i Now Bar og som brikke i statuslinja."
         }
       }
     },

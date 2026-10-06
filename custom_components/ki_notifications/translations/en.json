@@ -95,7 +95,10 @@
           "live_url": "Live Activity – page opened on tap (optional)",
           "live_priority": "Live Activity – priority against other activities",
           "live_interval": "Live Activity – minimum time between updates",
-          "live_linger": "Live Activity – keep \"finished\" for"
+          "live_linger": "Live Activity – keep \"finished\" for",
+          "android_color": "Android – icon colour",
+          "android_icon_url": "Android – large icon (image, optional)",
+          "live_android_persistent": "Live Activity – pin the notification on Android"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",
@@ -122,7 +125,10 @@
           "live_priority": "0–1. The highest gets the Dynamic Island and the top of the Lock Screen. Use a low number for something that should just sit there, e.g. an open gate.",
           "live_interval": "iOS throttles and drops updates that arrive too often. Within this time only the latest is sent.",
           "live_linger": "How long the final message stays before the activity is removed. 0 removes it at once.",
-          "message": "For custom progress: the words state, phase and progress in curly braces are replaced with the values."
+          "message": "For custom progress: the words state, phase and progress in curly braces are replaced with the values.",
+          "android_color": "Hex colour, e.g. #F44336. Tints the icon in the status bar and in the notification.",
+          "android_icon_url": "An image shown as the large icon on the right of the notification, e.g. /local/icons/alarm.png or an https address. Not shown when the notification has a camera image.",
+          "live_android_persistent": "The notification cannot be swiped away while it is running, and is removed by itself when finished. On Samsung with One UI 8 it appears in the Now Bar and as a chip in the status bar."
         }
       }
     },
@@ -232,7 +238,10 @@
           "live_url": "Live Activity – page opened on tap (optional)",
           "live_priority": "Live Activity – priority against other activities",
           "live_interval": "Live Activity – minimum time between updates",
-          "live_linger": "Live Activity – keep \"finished\" for"
+          "live_linger": "Live Activity – keep \"finished\" for",
+          "android_color": "Android – icon colour",
+          "android_icon_url": "Android – large icon (image, optional)",
+          "live_android_persistent": "Live Activity – pin the notification on Android"
         },
         "data_description": {
           "door_open": "Bruk nøyaktig rå tilstand fra Utviklerverktøy → Tilstander mens døren er åpen. Ikke det oversatte navnet på kortet.",
@@ -259,7 +268,10 @@
           "live_priority": "0–1. The highest gets the Dynamic Island and the top of the Lock Screen. Use a low number for something that should just sit there, e.g. an open gate.",
           "live_interval": "iOS throttles and drops updates that arrive too often. Within this time only the latest is sent.",
           "live_linger": "How long the final message stays before the activity is removed. 0 removes it at once.",
-          "message": "For custom progress: the words state, phase and progress in curly braces are replaced with the values."
+          "message": "For custom progress: the words state, phase and progress in curly braces are replaced with the values.",
+          "android_color": "Hex colour, e.g. #F44336. Tints the icon in the status bar and in the notification.",
+          "android_icon_url": "An image shown as the large icon on the right of the notification, e.g. /local/icons/alarm.png or an https address. Not shown when the notification has a camera image.",
+          "live_android_persistent": "The notification cannot be swiped away while it is running, and is removed by itself when finished. On Samsung with One UI 8 it appears in the Now Bar and as a chip in the status bar."
         }
       }
     },

@@ -1,56 +1,31 @@
-# KI Varslinger og sikkerhet 2.7.0
+# KI Varslinger og sikkerhet 2.8.0
 
-## Live Activities
+## Android: ikon med farge
 
-Varsler som blir stående på låseskjermen og oppdateres, i stedet for en rekke bannere – Live Activity på iPhone (også i Dynamic Island) og Live Update på Android.
+- Ikonet i statuslinja og i varselet får farge. Standard følger typen (grønn for familie, rød for alarm og fastkjørt lås, oransje for dørvarsel), og alarmvarslene bytter farge etter hendelse.
+- Nytt valg **Android – farge på ikonet** og **Android – stort ikon** (et bilde, f.eks. `/local/ikoner/alarm.png`) på alle varslingsoppsett.
+- iPhone er uendret.
 
-### Som valg i reglene du har
+## Live Updates på Android og Samsung
 
-Slå på **Vis som Live Activity** under Konfigurer. Valget er av som standard; en regel uten det oppfører seg som før.
+Live Activities fra 2.7.0 er tilpasset Android 16 – på Samsung One UI 8 med Now Bar og brikke i statuslinja.
 
-- **Støvsuger** – status og rom, med fremdriftslinje hvis du velger en sensor. Knappevarselet beholdes, men kommer stille.
-- **Alarm** – nedtelling for utgangs- og inngangstid, deretter «utløst». Krever en `alarm_control_panel`.
-- **Ruter** – nedtelling til trikken går, i stedet for et banner som straks er utdatert.
-- **Autolås** – nedtelling til døra låses. Trenger en telefon i oppsettet og en ventetid på minst 60 sekunder.
-- **Dørlås fastkjørt** – teller opp til låsen er i orden igjen.
-- **Egendefinert tilstand** – meldingen din, med valgfri fremdrift og nedtelling, til tilstanden er borte.
+- **Kort brikketekst:** inntil sju tegn, så Android viser teksten og ikke bare ikonet. Finnes det ingen tekst, vises prosenten.
+- **Festet varsel:** kan ikke sveipes bort mens det pågår, og fjernes av seg selv. Kan slås av per oppsett.
+- **Ingen minustid:** Android teller videre under null. Klokka tas nå bort når nedtellingen er ute, og Ruter viser «Har gått nå».
+- Eldre Android viser det samme som et festet varsel med fremdriftslinje og klokke.
 
-### Seks nye typer
+**Samsung:** slå på **Live-varsler for alle apper** under Utvikleralternativer, ellers vises ikke brikken i statuslinja.
 
-- **Elbillading** – batteri mot ladegrense og tid igjen.
-- **Hvitevare** – gjenstående tid, fremdrift og programfase.
-- **Åpen dør, port eller vindu** – hvor lenge den har stått åpen, med lav prioritet.
-- **Timer** – en `timer`-entitet som nedtelling.
-- **Basseng** – pumpe som går, med gjenstående tid eller fast kjøretid, og vanntemperatur.
-- **Egen fremdrift** – velg selv entitet, fremdrift, tekst og ikon.
+## Oppgradering
 
-### Felles
-
-- Farge, side som åpnes ved trykk, prioritet mot andre aktiviteter, minste tid mellom oppdateringer og hvor lenge «ferdig» blir stående.
-- Likt innhold sendes aldri to ganger, og innenfor 30 sekunder sendes bare den siste endringen – iOS struper og dropper ellers oppdateringene.
-- Nedtellinger går på telefonen. En sensor som teller ned minutt for minutt gir ingen sendinger.
-- Aktiviteten fjernes like før iOS sin åttetimersgrense, og finner tilbake etter omstart uten ny lyd.
-- **Test Live Activity**-knapp som viser et eksempel i ett minutt.
-- Statusentiteten viser om en aktivitet står på telefonen, og antall sendinger.
-
-## Krav
-
-iOS 17.2 eller Android 16, og Home Assistant 2026.7 eller nyere for iPhone. Eldre telefoner får et vanlig varsel som byttes ut.
-
-## Verdt å vite
-
-- iPhone skjuler meldingen mens en nedtelling vises, og tittelen kan ikke endres etter start. Tittelen er navnet på oppsettet.
-- Mange start og stopp under testing kan gjøre at nye aktiviteter uteblir en stund uten feilmelding. Det går over av seg selv.
-
-## Også rettet
-
-- `strings.json` manglet tekstene for tittel og prompt i værmeldingen.
+Ingen oppsett må endres. Eksisterende Android-varsler får farge på ikonet, og Live Activities blir festet på Android som standard.
 
 ### Kontrollert
 
 Python 3.13.16, Home Assistant 2025.12.5, uten pytest.
 
-- `python -m unittest discover -s tests` – 149 tester bestått, 50 av dem nye. Én hoppet over (publiseringsskriptet, fordi rsync mangler i testmiljøet).
-- `python tests/smoke_setup.py` – alle oppsett, også den nye hvitevaren, lastes og avlastes.
+- `python -m unittest discover -s tests` – 160 tester bestått, 11 av dem nye. Én hoppet over (publiseringsskriptet, fordi rsync mangler i testmiljøet).
+- `python tests/smoke_setup.py` – alle oppsett lastes og avlastes.
 
-Ikke verifisert på en fysisk telefon: utseendet på iPhone og Android, klokke som teller opp, og om «ferdig» gir lyd. Se TESTING.md.
+Ikke verifisert på en Samsung eller annen Android-telefon. Se TESTING.md.

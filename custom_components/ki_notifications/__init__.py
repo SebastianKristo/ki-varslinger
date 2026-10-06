@@ -15,7 +15,7 @@ from .door_blink import DoorBlink
 from .door_camera import DoorCamera
 from .extra_notifications import ExtraNotifications
 from .live_activity import LiveActivity, VACUUM_LABELS
-from .const import DOMAIN, PEOPLE, INVALID, flags, SECURITY_KINDS, LIVE_KINDS
+from .const import DOMAIN, PEOPLE, INVALID, flags, SECURITY_KINDS, LIVE_KINDS, ANDROID_COLORS
 from .logic import alarm_event, presence_event, vacuum_actions, minutes, choose_departure
 
 _LOGGER = logging.getLogger(__name__)
@@ -302,7 +302,7 @@ class Runtime(ExtraNotifications, Security, DoorBlink, DoorCamera, LiveActivity)
                     else:
                         await self.send(c['name'], c['message'], c['icon'])
 
-    async def send(self, title, message, icon='mdi:bell-ring-outline', *, away=False, critical=False, tag=None, actions=None, quiet=False, test=False, extra=None, ios_extra=None, android_extra=None, force=False):
+    async def send(self, title, message, icon='mdi:bell-ring-outline', *, away=False, critical=False, tag=None, actions=None, quiet=False, test=False, extra=None, ios_extra=None, android_extra=None, force=False, color=None):
         if self.closed or (len(flags(self.kind)) > 1 and not self.master_enabled and not test and not force):
             return
         c = self.cfg
@@ -330,6 +330,12 @@ class Runtime(ExtraNotifications, Security, DoorBlink, DoorCamera, LiveActivity)
                     payload.update({'alert_once':True, 'sticky':bool(actions), 'persistent':bool(actions)})
                 if actions is not None:
                     payload['actions'] = [{k:v for k,v in a.items() if k != 'icon'} for a in actions]
+                # Ikonet i statuslinja (notification_icon) får farge, og et valgfritt bilde
+                # vises som stort ikon. Et vedlagt bilde tar plassen til det store ikonet.
+                if message != 'clear_notification':
+                    payload.setdefault('color', color or c.get('android_color') or ANDROID_COLORS.get(self.kind, '#03A9F4'))
+                    if c.get('android_icon_url') and 'image' not in payload:
+                        payload['icon_url'] = c['android_icon_url']
                 if android_extra:
                     payload.update(android_extra)
             try:
@@ -353,7 +359,8 @@ class Runtime(ExtraNotifications, Security, DoorBlink, DoorCamera, LiveActivity)
     async def alarm_notice(self, event, test=False):
         titles = {'armed':'🔒 Alarm aktivert', 'disarmed':'🔓 Alarm deaktivert', 'triggered':'🚨 Alarm utløst'}
         icons = {'armed':'mdi:shield-lock', 'disarmed':'mdi:shield-off-outline', 'triggered':'mdi:alarm-light'}
-        await self.send(titles[event], ('TEST: ' if test else '') + titles[event][2:].strip() + '.', icons[event], critical=event == 'triggered' and self.cfg.get('critical',False), test=test)
+        await self.send(titles[event], ('TEST: ' if test else '') + titles[event][2:].strip() + '.', icons[event], critical=event == 'triggered' and self.cfg.get('critical',False), test=test,
+                        color={'armed':'#FF9800', 'disarmed':'#4CAF50'}.get(event) if not self.cfg.get('android_color') else None)
 
     async def vacuum_notice(self, state=None, *, quiet=True, started=False, test=False):
         v = self.hass.states.get(self.cfg['entity'])

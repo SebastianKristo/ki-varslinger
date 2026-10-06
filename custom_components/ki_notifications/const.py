@@ -20,7 +20,7 @@ def flags(kind):
     return {'enabled': 'Varsling'}
 
 SECURITY_KINDS = {'autolock', 'alarm_sync', 'face_unlock', 'door_blink'}
-VERSION = '2.7.0'
+VERSION = '2.8.0'
 
 
 # --- Live Activities (iOS) / Live Updates (Android) -------------------------
@@ -39,6 +39,11 @@ LIVE_KINDS = {
 }
 LIVE_COLORS = {'vacuum': '#03A9F4', 'alarm': '#F44336', 'ruter': '#E60000', 'autolock': '#FF9800',
                'lock_jammed': '#F44336', 'state': '#03A9F4'}
+# Android: fargen på ikonet i varselet. iPhone bruker fargen bare i Live Activities.
+ANDROID_COLORS = {'family': '#4CAF50', 'vacuum': '#03A9F4', 'alarm': '#F44336', 'state': '#03A9F4',
+                  'ruter': '#E60000', 'weather_ai': '#FFB300', 'ha_start': '#03A9F4',
+                  'lock_jammed': '#F44336', 'door_camera': '#FF9800'}
+ANDROID_CHIP = 7            # statuslinjebrikken på Android 16 viser omtrent sju tegn
 LIVE_INTERVAL = 30          # minste tid mellom to oppdateringer; iOS struper ellers
 LIVE_LINGER = 300           # hvor lenge «ferdig» blir stående før aktiviteten fjernes
 LIVE_MAX_SECONDS = 8 * 3600 - 300   # iOS avslutter selv etter 8 timer

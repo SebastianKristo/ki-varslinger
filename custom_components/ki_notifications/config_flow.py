@@ -4,7 +4,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.helpers import selector
-from .const import (DOMAIN, KINDS, PEOPLE, SECURITY_KINDS, LIVE_COLORS, LIVE_INTERVAL, LIVE_KINDS,
+from .const import (ANDROID_COLORS, DOMAIN, KINDS, PEOPLE, SECURITY_KINDS, LIVE_COLORS, LIVE_INTERVAL, LIVE_KINDS,
                     LIVE_LINGER, LIVE_NAMES, LIVE_OPTION_KINDS,
                     WEATHER_ICON, WEATHER_PROMPT, WEATHER_TITLE)
 
@@ -36,6 +36,9 @@ def schema(hass, kind, saved):
         add('sound', text, 'default')
         add('sound_away', text, 'default')
         add('channel', text, 'KI Varsler')
+        if kind not in LIVE_KINDS:
+            add('android_color', text, ANDROID_COLORS.get(kind, '#03A9F4'))
+        add('android_icon_url', text, required=False)
     if kind == 'family':
         for p in PEOPLE:
             known = f'switch.{p}_posisjon_hjemme_borte'
@@ -184,6 +187,7 @@ def schema(hass, kind, saved):
             LIVE_KINDS[kind][2] if kind in LIVE_KINDS else 0.5)
         add('live_interval', seconds(30, 900), LIVE_INTERVAL)
         add('live_linger', seconds(0, 3600), LIVE_LINGER)
+        add('live_android_persistent', selector.BooleanSelector(), True)
     return vol.Schema(fields)
 
 
@@ -193,11 +197,13 @@ def errors(hass, kind, data, entry_id=None):
         return {'base': 'no_targets'}
     if kind == 'live_open' and not data.get('entities'):
         return {'base': 'missing_entities'}
-    color = str(data.get('live_color') or '#000000').strip()
-    if color.startswith('#') and (len(color) not in (4, 7) or any(ch not in '0123456789abcdefABCDEF' for ch in color[1:])):
-        return {'base': 'invalid_color'}
-    if data.get('live_url') and not str(data['live_url']).startswith(('/', 'https://')):
-        return {'base': 'invalid_url'}
+    for key in ('live_color', 'android_color'):
+        color = str(data.get(key) or '#000000').strip()
+        if color.startswith('#') and (len(color) not in (4, 7) or any(ch not in '0123456789abcdefABCDEF' for ch in color[1:])):
+            return {'base': 'invalid_color'}
+    for key in ('live_url', 'android_icon_url'):
+        if data.get(key) and not str(data[key]).startswith(('/', 'https://')):
+            return {'base': 'invalid_url'}
     if any(not hass.services.has_service('notify', s) for s in targets):
         return {'base': 'missing_service'}
     if set(data.get('ios_targets', [])) & set(data.get('android_targets', [])):

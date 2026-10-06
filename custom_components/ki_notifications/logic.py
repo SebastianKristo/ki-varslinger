@@ -51,6 +51,11 @@ def number(value):
     except (ValueError, TypeError):
         return None
 
+def chip_text(text, limit=7):
+    """Teksten i statuslinjebrikken på Android. Lengre tekst gjør at bare ikonet vises."""
+    text = str(text or '').strip()
+    return text if len(text) <= limit else text[:limit - 1].rstrip() + '…'
+
 def clock_seconds(value):
     """'1:05:30' eller '05:30' -> sekunder. Brukes for timer-attributter."""
     parts = str(value).strip().split(':')

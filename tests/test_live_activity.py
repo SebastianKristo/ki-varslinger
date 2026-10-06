@@ -16,7 +16,7 @@ from homeassistant.util import dt as dt_util
 from custom_components.ki_notifications import Runtime
 from custom_components.ki_notifications.config_flow import errors, schema
 from custom_components.ki_notifications.const import KINDS, LIVE_KINDS, LIVE_OPTION_KINDS, flags
-from custom_components.ki_notifications.logic import clock_seconds, end_timestamp, number, states_set
+from custom_components.ki_notifications.logic import chip_text, clock_seconds, end_timestamp, number, states_set
 
 LIVE = 'custom_components.ki_notifications.live_activity.'
 
@@ -674,6 +674,128 @@ class ExistingRules(Base):
         await self.change(r, 'input_number.x', 'off', 'on')
         self.assertFalse(r.state_live)
         self.assertFalse(self.sent)
+
+
+class Android(Base):
+    """Ikoner og Live Updates på Android, med Samsung (One UI 8) som hovedmål."""
+    def pixel(self, index=-1):
+        return [d for s, d in self.sent if s == 'mobile_app_pixel'][index]
+
+    def test_chip_text(self):
+        self.assertEqual(chip_text('45%'), '45%')
+        self.assertEqual(chip_text('2 åpne'), '2 åpne')
+        self.assertEqual(chip_text('Garasjeport'), 'Garasj…')
+        self.assertEqual(len(chip_text('Inngangsdør bak')), 7)
+        self.assertEqual(chip_text(None), '')
+
+    async def test_ordinary_notification_has_icon_and_colour_on_android_only(self):
+        r = self.runtime('family', android=True, **{p: 'switch.' + p for p in ('rune', 'cybele', 'sebastian')})
+        await self.change(r, 'switch.rune', 'off', 'on')
+        android = self.pixel()['data']
+        self.assertEqual(android['notification_icon'], 'mdi:home-import-outline')
+        self.assertEqual(android['color'], '#4CAF50')
+        self.assertNotIn('icon_url', android)
+        ios = next(d for s, d in self.sent if s == 'mobile_app_iphone')['data']
+        self.assertNotIn('color', ios)                          # på iPhone betyr color noe annet
+        self.assertNotIn('icon_url', ios)
+
+    async def test_chosen_colour_and_large_icon(self):
+        r = self.runtime('lock_jammed', android=True, entity='lock.front', android_color='#123456',
+                         android_icon_url='/local/ikoner/las.png')
+        await r.jam_notice()
+        android = self.pixel()['data']
+        self.assertEqual((android['color'], android['icon_url']), ('#123456', '/local/ikoner/las.png'))
+        self.assertEqual(android['notification_icon'], 'mdi:lock-alert')
+
+    async def test_alarm_colour_follows_event_unless_chosen(self):
+        r = self.runtime('alarm', android=True, entity='alarm_control_panel.home')
+        for event, colour in (('armed', '#FF9800'), ('disarmed', '#4CAF50'), ('triggered', '#F44336')):
+            await r.alarm_notice(event)
+            self.assertEqual(self.pixel()['data']['color'], colour)
+        r.cfg['android_color'] = '#000000'
+        await r.alarm_notice('armed')
+        self.assertEqual(self.pixel()['data']['color'], '#000000')
+
+    async def test_camera_image_keeps_large_icon_out(self):
+        r = self.runtime('state', android=True, entity='binary_sensor.x', android_icon_url='/local/x.png')
+        await r.send('Tittel', 'Tekst', extra={'image': '/api/camera_proxy/camera.x'})
+        self.assertNotIn('icon_url', self.pixel()['data'])
+
+    async def test_clear_command_carries_no_appearance(self):
+        r = self.runtime('live_timer', android=True, entity='timer.x', android_icon_url='/local/x.png')
+        await r.live_clear_tag(r.live_tag)
+        self.assertNotIn('color', self.pixel()['data'])
+        self.assertNotIn('icon_url', self.pixel()['data'])
+
+    async def test_live_update_is_pinned_with_short_chip(self):
+        r = self.runtime('live_open', android=True, entities=['cover.garasjeport'], open_delay=0)
+        self.set('cover.garasjeport', 'open', {'friendly_name': 'Garasjeporten bak'}, ago=30)
+        await r.live_sync()
+        body, data = self.pixel(), self.pixel()['data']
+        self.assertTrue(body['title'])
+        self.assertIs(data['live_update'], True)
+        self.assertIs(data['persistent'], True)
+        self.assertIs(data['sticky'], True)
+        self.assertEqual(data['channel'], 'KI Varsler – live')
+        self.assertEqual(data['critical_text'], 'Garasj…')
+        self.assertEqual(data['color'], '#FF9800')
+        self.assertEqual(data['notification_icon'], 'mdi:door-open')
+        ios = next(d for s, d in self.sent if s == 'mobile_app_iphone')['data']
+        self.assertEqual(ios['critical_text'], 'Garasjeporten ')     # iPhone har plass til mer
+        self.assertNotIn('persistent', ios)
+
+    async def test_chip_falls_back_to_percent_and_pinning_can_be_turned_off(self):
+        r = self.runtime('live_progress', android=True, entity='binary_sensor.print', progress_entity='sensor.layer',
+                         progress_max=240, live_android_persistent=False)
+        self.set('binary_sensor.print', 'on')
+        self.set('sensor.layer', '60')
+        await r.live_sync()
+        data = self.pixel()['data']
+        self.assertEqual(data['critical_text'], '60')            # sensorens egen verdi
+        self.assertIs(data['persistent'], False)
+        r.live_payload.pop('critical_text')
+        self.assertEqual(r._live_android(r.live_payload, False)['critical_text'], '25%')
+
+    async def test_countdown_never_runs_negative(self):
+        """Android teller videre under null. Når tiden er ute, tas klokka bort."""
+        r = self.runtime('live_pool', android=True, entity='switch.pumpe', duration=30)
+        self.set('switch.pumpe', 'on', ago=1790)
+        await r.live_sync()
+        self.assertIs(self.pixel()['data']['chronometer'], True)
+        seconds, action = self.timer(r, 'zero')
+        self.assertAlmostEqual(seconds, 11, delta=2)
+        self.hass.states.async_set('switch.pumpe', 'on', timestamp=time.time() - 1801, force_update=True)
+        self.set('switch.pumpe', 'off'); self.set('switch.pumpe', 'on', ago=1801)
+        r.live_sent_at -= 60
+        await action(dt_util.utcnow())
+        self.assertNotIn('chronometer', self.pixel()['data'])
+        self.assertNotIn('zero', r.live_timers)
+
+    async def test_ruter_says_departed_instead_of_minus_time(self):
+        self.set('sensor.trikk', '6', {'route': '17 Majorstuen', 'due_at': '14:06', 'friendly_name': 'Frydenlund'})
+        r = self.runtime('ruter', android=True, trackers=['device_tracker.phone'], zones=['zone.skole'],
+                         tram_sensors=['sensor.trikk'], bus_sensors=[], directions='majorstuen', walk=4, ride=7,
+                         transfer=3, live_activity=True)
+        await r.ruter_notice()
+        self.assertEqual(self.pixel()['data']['critical_text'], '14:06')
+        r.ruter_live['when'] = time.time() - 1
+        r.live_sent_at -= 60
+        await r.live_sync()
+        self.assertEqual(self.pixel()['message'], 'Har gått nå')
+        self.assertNotIn('chronometer', self.pixel()['data'])
+        self.assertEqual(self.pixel()['data']['critical_text'], 'Gått')
+
+    async def test_forms_and_validation(self):
+        keys = {str(k) for k in schema(self.hass, 'alarm', {}).schema}
+        self.assertTrue({'android_color', 'android_icon_url', 'live_android_persistent'} <= keys)
+        live = {str(k) for k in schema(self.hass, 'live_ev', {}).schema}
+        self.assertIn('android_icon_url', live)
+        self.assertNotIn('android_color', live)                 # Live-typene har én farge: live_color
+        self.assertNotIn('android_color', {str(k) for k in schema(self.hass, 'door_blink', {}).schema})
+        ok = {'ios_targets': [], 'android_targets': ['mobile_app_pixel'], 'entity': 'alarm_control_panel.home'}
+        self.assertEqual(errors(self.hass, 'alarm', {**ok, 'android_color': '#12'}), {'base': 'invalid_color'})
+        self.assertEqual(errors(self.hass, 'alarm', {**ok, 'android_icon_url': 'http://x/y.png'}), {'base': 'invalid_url'})
+        self.assertEqual(errors(self.hass, 'alarm', {**ok, 'android_color': '#F44336', 'android_icon_url': '/local/a.png'}), {})
 
 
 class Setup(Base):

@@ -1,6 +1,6 @@
-# Testresultat – KI Varslinger og sikkerhet 2.7.0
+# Testresultat – KI Varslinger og sikkerhet 2.8.0
 
-Sist testet 4. oktober 2026 (2.7.0). Tidligere avsnitt: testet 15. september 2026 med Python 3.13.15 og Home Assistant Core 2025.12.5 i et isolert lokalt miljø.
+Sist testet 6. oktober 2026 (2.8.0). Tidligere avsnitt: testet 15. september 2026 med Python 3.13.15 og Home Assistant Core 2025.12.5 i et isolert lokalt miljø.
 
 ## Funksjonstester
 
@@ -82,3 +82,11 @@ Dekker: tolkning av gjenstående tid (tall med enhet, klokkeformat, tidsstempel,
 Innlastingstesten setter også opp en hvitevare gjennom HAs egen laster: tre entiteter, aktiviteten starter på en ekte tilstandsendring, og oppsettet avlastes rent.
 
 **Ikke verifisert på telefon:** hvordan aktiviteten faktisk ser ut på iPhone og Android, at en klokke som teller opp (åpen dør, fastkjørt lås) vises som ventet, om «ferdig» gir lyd, og Alarmos `delay`-attributt mot en ekte alarm. Tidsur og varslingshandlinger er simulerte. Bruk **Test Live Activity** og én ordinær hendelse per oppsett etter installasjon.
+
+## Android og Samsung 2.8.0
+
+11 nye tester, 160 totalt. Kjørt 6. oktober 2026 med Python 3.13.16 og Home Assistant 2025.12.5, uten pytest. Testen av publiseringsskriptet ble hoppet over fordi rsync mangler i testmiljøet.
+
+Dekker: ikon og farge på vanlige Android-varsler, og at iPhone ikke får `color` eller `icon_url`; valgt farge og stort ikon; alarmfarge per hendelse; at kamerabilde går foran stort ikon; at fjerningskommandoen ikke bærer utseende; festet Live Update med kanal og kort brikketekst; prosent som reservetekst; at festing kan slås av; at en nedtelling aldri går i minus; Ruter etter avgang; skjema og validering.
+
+**Ikke verifisert på telefon:** ingenting av dette er sett på en Samsung eller annen Android. Særlig usikkert er om `persistent` sammen med `live_update` oppfører seg som ventet i Now Bar, og hvor mange tegn brikken faktisk viser på One UI 8.
